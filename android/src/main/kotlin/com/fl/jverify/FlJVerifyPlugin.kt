@@ -110,7 +110,7 @@ class FlJVerifyPlugin : FlutterPlugin, MethodCallHandler {
                     )
                 }
             }
-            "dismissLoginAuthActivity" -> {
+            "dismissLoginAuthPage" -> {
                 JVerificationInterface.dismissLoginAuthActivity();
                 result.success(true)
             }
@@ -132,8 +132,7 @@ class FlJVerifyPlugin : FlutterPlugin, MethodCallHandler {
                 }
             }
             "setSmsIntervalTime" -> {
-                val intervalTime = call.argument<Long>("timeInterval")
-                JVerificationInterface.setSmsIntervalTime(intervalTime!!)
+                JVerificationInterface.setSmsIntervalTime(call.arguments as Long)
                 result.success(true)
             }
             else -> {

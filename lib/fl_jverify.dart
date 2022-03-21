@@ -3,6 +3,8 @@ import 'dart:async';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 
+typedef JVAuthPageEventListener = void Function(JVerifyResult result);
+
 class FlJVerify {
   factory FlJVerify() => _singleton ??= FlJVerify._();
 
@@ -31,6 +33,17 @@ class FlJVerify {
       'setControlWifiSwitch': setControlWifiSwitch
     });
     return map == null ? null : JVerifyResult.fromJson(map);
+  }
+
+  /// 授权页回调监听
+  void addEventHandler({JVAuthPageEventListener? authPageEventListener}) {
+    _channel.setMethodCallHandler((call) async {
+      switch (call.method) {
+        case 'onReceiveAuthPageEvent':
+          authPageEventListener?.call(JVerifyResult.fromJson(call.arguments));
+          break;
+      }
+    });
   }
 
   /// 设置 debug 模式
@@ -106,14 +119,6 @@ class FlJVerify {
     return map == null ? null : JVerifyResult.fromJson(map);
   }
 
-  /// 设置前后两次获取验证码的时间间隔，默认 30000ms，有效范围(0,300000)
-  Future<bool> setGetCodeInternal(int intervalTime) async {
-    if (!_supportPlatform) return false;
-    final state = await _channel.invokeMethod<bool?>(
-        'setGetCodeInternal', {'timeInterval': intervalTime});
-    return state ?? false;
-  }
-
   /*
    * SDK 获取短信验证码
    *        key = 'code', vlaue = 状态码，3000代表获取成功
@@ -128,6 +133,15 @@ class FlJVerify {
     return map == null ? null : JVerifyResult.fromJson(map);
   }
 
+  /// 设置前后两次获取验证码的时间间隔，默认 30000ms，有效范围(0,300000)
+  Future<bool> setGetCodeInternal(int intervalTime) async {
+    if (!_supportPlatform) return false;
+    final state =
+        await _channel.invokeMethod<bool?>('setGetCodeInternal', intervalTime);
+    return state ?? false;
+  }
+
+  /// 清除预登录缓存
   Future<bool> clearPreLoginCache() async {
     if (!_supportPlatform) return false;
     final state = await _channel.invokeMethod<bool?>('clearPreLoginCache');
@@ -135,10 +149,9 @@ class FlJVerify {
   }
 
   /// 关闭授权页面
-  Future<bool> dismissLoginAuthActivity() async {
+  Future<bool> dismissLoginAuthPage() async {
     if (!_supportPlatform) return false;
-    final state =
-        await _channel.invokeMethod<bool?>('dismissLoginAuthActivity');
+    final state = await _channel.invokeMethod<bool?>('dismissLoginAuthPage');
     return state ?? false;
   }
 
@@ -163,98 +176,19 @@ class JVerifyResult {
   /// 成功时为对应运营商，CM代表中国移动，CU代表中国联通，CT代表中国电信。失败时可能为null
   String? operator;
 
+  /// iOS uuid
+  String? result;
+
   JVerifyResult.fromJson(Map<dynamic, dynamic> json)
       : code = json['code'],
         message = json['message'],
+        result = json['result'],
         operator = json['operator'];
 
-  Map toMap() => {'code': code, 'message': message, 'operator': operator};
-}
-
-/*
-* iOS 布局参照 item (Android 只)
-*
-* ItemNone    不参照任何item。可用来直接设置 Y、width、height
-* ItemLogo    参照logo视图
-* ItemNumber  参照号码栏
-* ItemSlogan  参照标语栏
-* ItemLogin   参照登录按钮
-* ItemCheck   参照隐私选择框
-* ItemPrivacy 参照隐私栏
-* ItemSuper   参照父视图
-* */
-enum JVIOSLayoutItem {
-  ItemNone,
-  ItemLogo,
-  ItemNumber,
-  ItemSlogan,
-  ItemLogin,
-  ItemCheck,
-  ItemPrivacy,
-  ItemSuper
-}
-
-/*
-*
-* iOS授权界面弹出模式
-* 注意：窗口模式下不支持 PartialCurl
-*
-*
-* */
-enum JVIOSUIModalTransitionStyle {
-  CoverVertical,
-  FlipHorizontal,
-  CrossDissolve,
-  PartialCurl
-}
-/*
-*
-* iOS状态栏设置，需要设置info.plist文件中
-* View controller-based status barappearance值为YES
-* 授权页和隐私页状态栏才会生效
-*
-* */
-enum JVIOSBarStyle {
-  StatusBarStyleDefault, // Automatically chooses light or dark content based on the user interface style
-  StatusBarStyleLightContent, // Light content, for use on dark backgrounds iOS 7 以上
-  StatusBarStyleDarkContent // Dark content, for use on light backgrounds  iOS 13 以上
-}
-
-String getStringFromEnum<T>(T) {
-  if (T == null) {
-    return '';
-  }
-
-  return T.toString().split('.').last;
-}
-
-class JVPrivacy {
-  String? name;
-  String? url;
-  String? beforeName;
-  String? afterName;
-  String? separator; //ios分隔符专属
-
-  JVPrivacy(this.name, this.url,
-      {this.beforeName, this.afterName, this.separator});
-
-  Map toMap() {
-    return {
-      'name': name,
-      'url': url,
-      'beforeName': beforeName,
-      'afterName': afterName,
-      'separator': separator
-    };
-  }
-
-  Map toJson() {
-    Map map = new Map();
-    map['name'] = this.name;
-    map['url'] = this.url;
-    map['beforeName'] = this.beforeName;
-    map['afterName'] = this.afterName;
-    map['separator'] = this.separator;
-    return map..removeWhere((key, value) => value == null);
-  }
+  Map toMap() => {
+        'code': code,
+        'message': message,
+        'operator': operator,
+        'result': result
+      };
 }
