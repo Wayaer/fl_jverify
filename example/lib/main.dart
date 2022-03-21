@@ -26,8 +26,8 @@ class _HomePageState extends State<HomePage> {
           Container(
               alignment: Alignment.center,
               margin: const EdgeInsets.all(10),
-              child: Text(text),
-              height: 100),
+              child: Text(text, style: const TextStyle(fontSize: 12)),
+              height: 130),
           Wrap(spacing: 10, alignment: WrapAlignment.center, children: [
             ElevatedText('setup', onPressed: () async {
               final result = await FlJVerify().setup();

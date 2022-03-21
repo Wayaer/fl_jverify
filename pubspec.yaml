@@ -1,6 +1,7 @@
 name: fl_jverify
 description: Jverify plugin for flutter, only Android and IOS are supported
 version: 0.0.1
+repository: https://github.com/Wayaer/fl_jverify.git
 
 environment:
   sdk: ">=2.12.0 <3.0.0"

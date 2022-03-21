@@ -103,7 +103,7 @@ static NSString *const operatorKey = @"operator";
                 }];
             });
         }];
-    } else if ([@"dismissLoginAuthActivity" isEqualToString:call.method]) {
+    } else if ([@"dismissLoginAuthPage" isEqualToString:call.method]) {
         [JVERIFICATIONService dismissLoginControllerAnimated:YES completion:^{
             result(@(YES));
         }];
