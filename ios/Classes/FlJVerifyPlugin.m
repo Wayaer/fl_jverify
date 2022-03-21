@@ -3,8 +3,6 @@
 // 如果需要使用 idfa 功能所需要引入的头文件（可选）
 #import <AdSupport/AdSupport.h>
 
-#define UIColorFromRGB(rgbValue)  ([UIColor colorWithRed:((float)((rgbValue & 0xFF0000) >> 16))/255.0 green:((float)((rgbValue & 0xFF00) >> 8))/255.0 blue:((float)(rgbValue & 0xFF))/255.0 alpha:1.0])
-
 @implementation FlJVerifyPlugin
 
 
@@ -27,15 +25,12 @@ static NSString *const operatorKey = @"operator";
 - (void)handleMethodCall:(FlutterMethodCall *)call result:(FlutterResult)result {
     if ([@"setup" isEqualToString:call.method]) {
         NSDictionary *arguments = [call arguments];
-        NSString *appKey = arguments[@"appKey"];
+        NSString *iosKey = arguments[@"iosKey"];
         NSString *channel = arguments[@"channel"];
         NSNumber *useIDFA = arguments[@"useIDFA"];
         NSNumber *timeout = arguments[@"timeout"];
         JVAuthConfig *config = [[JVAuthConfig alloc] init];
-        if (![appKey isKindOfClass:[NSNull class]]) {
-            config.appKey = appKey;
-        }
-        config.appKey = appKey;
+        config.appKey = iosKey;
         if (![channel isKindOfClass:[NSNull class]]) {
             config.channel = channel;
         }
@@ -44,11 +39,9 @@ static NSString *const operatorKey = @"operator";
         }
         config.timeout = [timeout longLongValue];
         NSString *idfaStr = NULL;
-        if (![useIDFA isKindOfClass:[NSNull class]]) {
-            if ([useIDFA boolValue]) {
-                idfaStr = [[[ASIdentifierManager sharedManager] advertisingIdentifier] UUIDString];
-                config.advertisingId = idfaStr;
-            }
+        if ([useIDFA boolValue]) {
+            idfaStr = [[[ASIdentifierManager sharedManager] advertisingIdentifier] UUIDString];
+            config.advertisingId = idfaStr;
         }
         config.authBlock = ^(NSDictionary *dic) {
             dispatch_async(dispatch_get_main_queue(), ^{

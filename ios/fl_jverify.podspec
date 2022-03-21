@@ -19,5 +19,4 @@ A new Flutter project.
   s.dependency 'JVerification'
   s.platform = :ios, '10.0'
   s.static_framework = true
-
 end

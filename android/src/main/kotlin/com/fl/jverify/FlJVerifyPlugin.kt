@@ -111,7 +111,7 @@ class FlJVerifyPlugin : FlutterPlugin, MethodCallHandler {
                 }
             }
             "dismissLoginAuthPage" -> {
-                JVerificationInterface.dismissLoginAuthActivity();
+                JVerificationInterface.dismissLoginAuthActivity()
                 result.success(true)
             }
             "clearPreLoginCache" -> {
@@ -132,7 +132,7 @@ class FlJVerifyPlugin : FlutterPlugin, MethodCallHandler {
                 }
             }
             "setSmsIntervalTime" -> {
-                JVerificationInterface.setSmsIntervalTime(call.arguments as Long)
+                JVerificationInterface.setSmsIntervalTime((call.arguments as Int).toLong())
                 result.success(true)
             }
             else -> {

@@ -16,9 +16,12 @@ class FlJVerify {
 
   /// 初始化, timeout单位毫秒，合法范围是(0,30000]，推荐设置为5000-10000,默认值为10000
   Future<JVerifyResult?> setup(
-      {String? iosKey,
+      {
+
+      /// ios 使用
+      String? iosKey,
       String? channel,
-      bool? useIDFA,
+      bool useIDFA = false,
 
       /// andorid 使用
       int timeout = 10000,
@@ -49,8 +52,7 @@ class FlJVerify {
   /// 设置 debug 模式
   Future<bool> setDebugMode(bool debug) async {
     if (!_supportPlatform) return false;
-    final state =
-        await _channel.invokeMethod<bool?>('setDebugMode', {'debug': debug});
+    final state = await _channel.invokeMethod<bool?>('setDebugMode', debug);
     return state ?? false;
   }
 
@@ -111,8 +113,8 @@ class FlJVerify {
   * @discussion since SDK v2.4.0，授权页面点击事件监听：通过添加 JVAuthPageEventListener 监听，来监听授权页点击事件
   *
   * */
-  Future<JVerifyResult?> loginAuth(bool autoDismiss,
-      {int timeout = 5000}) async {
+  Future<JVerifyResult?> loginAuth(
+      {bool autoDismiss = true, int timeout = 5000}) async {
     if (!_supportPlatform) return null;
     final map = await _channel.invokeMethod<Map<dynamic, dynamic>?>(
         'loginAuth', {'autoDismiss': autoDismiss, 'timeout': timeout});
@@ -134,10 +136,10 @@ class FlJVerify {
   }
 
   /// 设置前后两次获取验证码的时间间隔，默认 30000ms，有效范围(0,300000)
-  Future<bool> setGetCodeInternal(int intervalTime) async {
+  Future<bool> setSmsIntervalTime(int intervalTime) async {
     if (!_supportPlatform) return false;
     final state =
-        await _channel.invokeMethod<bool?>('setGetCodeInternal', intervalTime);
+        await _channel.invokeMethod<bool?>('setSmsIntervalTime', intervalTime);
     return state ?? false;
   }
 
@@ -185,7 +187,7 @@ class JVerifyResult {
         result = json['result'],
         operator = json['operator'];
 
-  Map toMap() => {
+  Map<String, dynamic> toMap() => {
         'code': code,
         'message': message,
         'operator': operator,

@@ -1,5 +1,4 @@
 import 'package:fl_jverify/fl_jverify.dart';
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_waya/flutter_waya.dart';
 
@@ -16,23 +15,81 @@ class HomePage extends StatefulWidget {
 }
 
 class _HomePageState extends State<HomePage> {
-  @override
-  void initState() {
-    super.initState();
-  }
-
-  void initialize() async {
-    final result = await FlJVerify().setup();
-    log(result?.toMap());
-  }
+  String text = 'Unknown';
 
   @override
   Widget build(BuildContext context) {
     return ExtendedScaffold(
         appBar: AppBar(title: const Text('极光认证 Flutter')),
-        mainAxisAlignment: MainAxisAlignment.center,
+        padding: const EdgeInsets.all(20),
         children: [
-          ElevatedText('initialize', onPressed: initialize),
+          Container(
+              alignment: Alignment.center,
+              margin: const EdgeInsets.all(10),
+              child: Text(text),
+              height: 100),
+          Wrap(spacing: 10, alignment: WrapAlignment.center, children: [
+            ElevatedText('setup', onPressed: () async {
+              final result = await FlJVerify().setup();
+              if (result == null) return;
+              text = result.toMap().toString();
+              setState(() {});
+            }),
+            ElevatedText('setDebugMode', onPressed: () async {
+              final result = await FlJVerify().setDebugMode(true);
+              text = result.toString();
+              setState(() {});
+            }),
+            ElevatedText('isInitSuccess', onPressed: () async {
+              final result = await FlJVerify().isInitSuccess();
+              text = result.toString();
+              setState(() {});
+            }),
+            ElevatedText('checkVerifyEnable', onPressed: () async {
+              final result = await FlJVerify().checkVerifyEnable();
+              text = result.toString();
+              setState(() {});
+            }),
+            ElevatedText('getToken', onPressed: () async {
+              final result = await FlJVerify().getToken();
+              if (result == null) return;
+              text = result.toMap().toString();
+              setState(() {});
+            }),
+            ElevatedText('preLogin', onPressed: () async {
+              final result = await FlJVerify().preLogin();
+              if (result == null) return;
+              text = result.toMap().toString();
+              setState(() {});
+            }),
+            ElevatedText('loginAuth', onPressed: () async {
+              final result = await FlJVerify().loginAuth();
+              if (result == null) return;
+              text = result.toMap().toString();
+              setState(() {});
+            }),
+            ElevatedText('clearPreLoginCache', onPressed: () async {
+              final result = await FlJVerify().clearPreLoginCache();
+              text = result.toString();
+              setState(() {});
+            }),
+            ElevatedText('getSMSCode', onPressed: () async {
+              final result = await FlJVerify().getSMSCode(phone: '');
+              if (result == null) return;
+              text = result.toMap().toString();
+              setState(() {});
+            }),
+            ElevatedText('setSmsIntervalTime', onPressed: () async {
+              final result = await FlJVerify().setSmsIntervalTime(1000);
+              text = result.toString();
+              setState(() {});
+            }),
+            ElevatedText('dismissLoginAuthPage', onPressed: () async {
+              final result = await FlJVerify().dismissLoginAuthPage();
+              text = result.toString();
+              setState(() {});
+            }),
+          ])
         ]);
   }
 }
