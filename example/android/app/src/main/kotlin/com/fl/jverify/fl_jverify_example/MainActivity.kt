@@ -1,4 +1,4 @@
-package com.well.young.baby.app
+package com.fl.jverify.example
 
 import io.flutter.embedding.android.FlutterActivity
 

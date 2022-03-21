@@ -37,25 +37,16 @@ android {
     }
 
     defaultConfig {
-        applicationId "com.well.young.baby.app"
+        applicationId "com.fl.jverify.example"
         minSdkVersion 21
         targetSdkVersion 31
         versionCode flutterVersionCode.toInteger()
         versionName flutterVersionName
         manifestPlaceholders = [
-                JPUSH_PKGNAME : applicationId,
-                JPUSH_APPKEY : "03a5b93c0cf529c176768bd5", 
-                JPUSH_CHANNEL : "flutter",
+                JPUSH_PKGNAME: applicationId,
+                JPUSH_APPKEY : "你的APPKey",
+                JPUSH_CHANNEL: "flutter",
         ]
-    }
-
-    signingConfigs {
-        release {
-            storeFile file("wellyoung.jks")
-            storePassword "wellyoung123"
-            keyAlias "wellyoung"
-            keyPassword "wellyoung123"
-        }
     }
 
     buildTypes {
@@ -63,7 +54,7 @@ android {
             signingConfig signingConfigs.debug
         }
     }
-    namespace 'com.well.young.baby.app'
+    namespace 'com.fl.jverify.example'
 }
 
 flutter {

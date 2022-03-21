@@ -61,7 +61,7 @@ class FlJVerify {
    *        key = 'code', vlaue = 状态码，2000代表获取成功
    *        key = 'message', value = 成功即为 token，失败为提示
    * */
-  Future<JVerifyResult?> getToken({String? timeOut}) async {
+  Future<JVerifyResult?> getToken({int timeOut = 5000}) async {
     if (!_supportPlatform) return null;
     final map = await _channel.invokeMethod<Map<dynamic, dynamic>?>(
         'getToken', timeOut);
@@ -75,7 +75,7 @@ class FlJVerify {
    *        key = 'code', vlaue = 状态码，7000代表获取成功
    *        key = 'message', value = 结果信息描述
    * */
-  Future<JVerifyResult?> preLogin({int timeOut = 10000}) async {
+  Future<JVerifyResult?> preLogin({int timeOut = 5000}) async {
     if (!_supportPlatform) return null;
     if (timeOut >= 3000 && timeOut <= 10000) {
       timeOut = timeOut;
@@ -99,7 +99,7 @@ class FlJVerify {
   *
   * */
   Future<JVerifyResult?> loginAuth(bool autoDismiss,
-      {int timeout = 10000}) async {
+      {int timeout = 5000}) async {
     if (!_supportPlatform) return null;
     final map = await _channel.invokeMethod<Map<dynamic, dynamic>?>(
         'loginAuth', {'autoDismiss': autoDismiss, 'timeout': timeout});
@@ -123,19 +123,22 @@ class FlJVerify {
   Future<JVerifyResult?> getSMSCode(
       {required String phone, String? signId, String? tempId}) async {
     if (!_supportPlatform) return null;
-    final map =
-        await _channel.invokeMethod<Map<dynamic, dynamic>?>('getSMSCode', {
-      'phoneNumber': phone,
-      'signId': signId,
-      'tempId': tempId,
-    });
+    final map = await _channel.invokeMethod<Map<dynamic, dynamic>?>(
+        'getSMSCode', {'phone': phone, 'signId': signId, 'tempId': tempId});
     return map == null ? null : JVerifyResult.fromJson(map);
   }
 
-  /// SDK 清除预取号缓存
   Future<bool> clearPreLoginCache() async {
     if (!_supportPlatform) return false;
     final state = await _channel.invokeMethod<bool?>('clearPreLoginCache');
+    return state ?? false;
+  }
+
+  /// 关闭授权页面
+  Future<bool> dismissLoginAuthActivity() async {
+    if (!_supportPlatform) return false;
+    final state =
+        await _channel.invokeMethod<bool?>('dismissLoginAuthActivity');
     return state ?? false;
   }
 

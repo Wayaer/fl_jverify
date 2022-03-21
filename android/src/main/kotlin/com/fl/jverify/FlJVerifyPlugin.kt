@@ -26,7 +26,6 @@ class FlJVerifyPlugin : FlutterPlugin, MethodCallHandler {
     /// 运营商信息
     private val oprKey = "operator"
 
-
     override fun onAttachedToEngine(flutterPluginBinding: FlutterPluginBinding) {
         channel = MethodChannel(flutterPluginBinding.binaryMessenger, "fl_jverify")
         channel!!.setMethodCallHandler(this)
@@ -47,10 +46,10 @@ class FlJVerifyPlugin : FlutterPlugin, MethodCallHandler {
                 }
                 JVerificationInterface.init(context, timeout!!) { code, message ->
                     result.success(
-                        mapOf(
-                            codeKey to code,
-                            msgKey to message
-                        )
+                            mapOf(
+                                    codeKey to code,
+                                    msgKey to message
+                            )
                     )
                 }
             }
@@ -65,28 +64,23 @@ class FlJVerifyPlugin : FlutterPlugin, MethodCallHandler {
                 result.success(JVerificationInterface.checkVerifyEnable(context))
             }
             "getToken" -> {
-                JVerificationInterface.getToken(
-                    context,
-                    call.argument<Int>("timeOut")!!
-                ) { code, message, operator ->
+                JVerificationInterface.getToken(context, call.arguments as Int) { code, message, operator ->
                     result.success(
-                        mapOf(
-                            codeKey to code,
-                            msgKey to message,
-                            oprKey to operator
-                        )
+                            mapOf(
+                                    codeKey to code,
+                                    msgKey to message,
+                                    oprKey to operator
+                            )
                     )
                 }
             }
             "preLogin" -> {
-                JVerificationInterface.preLogin(
-                    context, call.argument<Int>("timeOut")!!
-                ) { code, message ->
+                JVerificationInterface.preLogin(context, call.arguments as Int) { code, message ->
                     result.success(
-                        mapOf(
-                            codeKey to code,
-                            msgKey to message
-                        )
+                            mapOf(
+                                    codeKey to code,
+                                    msgKey to message
+                            )
                     )
                 }
             }
@@ -99,37 +93,41 @@ class FlJVerifyPlugin : FlutterPlugin, MethodCallHandler {
                 settings.authPageEventListener = object : AuthPageEventListener() {
                     override fun onEvent(code: Int, msg: String) {
                         channel!!.invokeMethod(
-                            "onReceiveAuthPageEvent", mapOf(
+                                "onReceiveAuthPageEvent", mapOf(
                                 codeKey to code,
-                                msgKey to msg,
-                            )
+                                msgKey to msg
+                        )
                         )
                     }
                 }
                 JVerificationInterface.loginAuth(context, settings) { code, msg, operator ->
                     result.success(
-                        mapOf(
-                            codeKey to code,
-                            msgKey to msg,
-                            oprKey to operator
-                        )
+                            mapOf(
+                                    codeKey to code,
+                                    msgKey to msg,
+                                    oprKey to operator
+                            )
                     )
                 }
+            }
+            "dismissLoginAuthActivity" -> {
+                JVerificationInterface.dismissLoginAuthActivity();
+                result.success(true)
             }
             "clearPreLoginCache" -> {
                 JVerificationInterface.clearPreLoginCache()
                 result.success(true)
             }
             "getSMSCode" -> {
-                val phoneNum = call.argument<String>("phoneNumber")
+                val phoneNum = call.argument<String>("phone")
                 val signId = call.argument<String>("signId")
                 val tempId = call.argument<String>("tempId")
                 JVerificationInterface.getSmsCode(context, phoneNum, signId, tempId) { code, msg ->
                     result.success(
-                        mapOf(
-                            codeKey to code,
-                            msgKey to msg,
-                        )
+                            mapOf(
+                                    codeKey to code,
+                                    msgKey to msg,
+                            )
                     )
                 }
             }
@@ -144,13 +142,12 @@ class FlJVerifyPlugin : FlutterPlugin, MethodCallHandler {
         }
     }
 
-
     private fun setControlWifiSwitch() {
         try {
             val aClass = JVerificationInterface::class.java
             val method = aClass.getDeclaredMethod(
-                "setControlWifiSwitch",
-                Boolean::class.javaPrimitiveType
+                    "setControlWifiSwitch",
+                    Boolean::class.javaPrimitiveType
             )
             method.isAccessible = true
             method.invoke(aClass, false)
@@ -158,15 +155,4 @@ class FlJVerifyPlugin : FlutterPlugin, MethodCallHandler {
             e.printStackTrace()
         }
     }
-
-
-//    private fun getValueByKey(call: MethodCall?, key: String): Any? {
-//        return if (call != null && call.hasArgument(key)) {
-//            call.argument<Any>(key)
-//        } else {
-//            null
-//        }
-//    }
-
-
 }
