@@ -159,6 +159,7 @@ class FlJVerifyPlugin : FlutterPlugin, MethodCallHandler {
                 } else {
                     JVerificationInterface.setCustomUIWithConfig(portrait)
                 }
+                result.success(true)
             }
             "dismissLoginAuthPage" -> {
                 JVerificationInterface.dismissLoginAuthActivity()

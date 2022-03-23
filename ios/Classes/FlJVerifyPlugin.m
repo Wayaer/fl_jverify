@@ -353,23 +353,14 @@ JVLayoutConstraint *JVLayoutHeight(CGFloat height) {
     if (loginButtonTextColor) {
         uiConfig.logBtnTextColor = UIColorFromRGB([loginButtonTextColor integerValue]);
     }
-    NSArray *images = @[];
-
     NSString *loginBtnNormalImage = config[@"loginBtnNormalImage"];
-    if (loginBtnNormalImage) {
-        [images indexOfObject:[UIImage imageNamed:loginBtnNormalImage]];
-    }
     NSString *loginBtnPressedImage = config[@"loginBtnPressedImage"];
-    loginBtnPressedImage = loginBtnPressedImage ?: nil;
-    if (loginBtnPressedImage) {
-        [images indexOfObject:[UIImage imageNamed:loginBtnPressedImage]];
-    }
     NSString *loginBtnUnableImage = config[@"loginBtnUnableImage"];
-    loginBtnUnableImage = loginBtnUnableImage ?: nil;
-    if (loginBtnUnableImage) {
-        [images indexOfObject:[UIImage imageNamed:loginBtnUnableImage]];
+    if (loginBtnNormalImage && loginBtnPressedImage && loginBtnUnableImage) {
+        NSArray *images = @[[UIImage imageNamed:loginBtnNormalImage], [UIImage imageNamed:loginBtnPressedImage], [UIImage imageNamed:loginBtnUnableImage]];
+        uiConfig.logBtnImgs = images;
     }
-    uiConfig.logBtnImgs = images;
+
     /************** check box ***************/
 
     NSNumber *privacyOffsetY = [self getNumberValue:config key:@"privacyOffsetY"];

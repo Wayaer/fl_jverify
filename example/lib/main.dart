@@ -1,7 +1,7 @@
-import 'dart:io';
-
 import 'package:fl_jverify/fl_jverify.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_curiosity/flutter_curiosity.dart';
 import 'package:flutter_waya/flutter_waya.dart';
 
 void main() {
@@ -28,16 +28,20 @@ class _HomePageState extends State<HomePage> {
   }
 
   void setup() async {
-    final result = await FlJVerify().setup(iosKey: '03a5b93c0cf529c176768bd5');
+    final result = await FlJVerify().setup(iosKey: '');
     if (result == null) return;
     text = result.toMap().toString();
     await setCustomAuthorizationView();
     setState(() {});
     checkVerifyEnable();
     FlJVerify().addEventHandler(authPageEventListener: (JVerifyResult result) {
-      print('authPageEventListener===  ${result.toMap()}');
+      if (kDebugMode) {
+        print('authPageEventListener===  ${result.toMap()}');
+      }
     }, clickWidgetEventListener: (String id) {
-      print('clickWidgetEventListener===  $id');
+      if (kDebugMode) {
+        print('clickWidgetEventListener===  $id');
+      }
     });
   }
 
@@ -49,107 +53,7 @@ class _HomePageState extends State<HomePage> {
   }
 
   Future<void> setCustomAuthorizationView() async {
-    final uiConfig = JVIOSUIConfig();
-    bool isiOS = Platform.isIOS;
-
-    /// 自定义授权的 UI 界面，以下设置的图片必须添加到资源文件里，
-    /// android项目将图片存放至drawable文件夹下，可使用图片选择器的文件名,例如：btn_login.xml,入参为'btn_login'。
-    /// ios项目存放在 Assets.xcassets。
-    ///
-    // uiConfig.authBGGifPath = 'main_gif';
-    // uiConfig.authBGVideoPath='main_vi';
-    // uiConfig.authBGVideoPath =
-    //     'http://clips.vorwaerts-gmbh.de/big_buck_bunny.mp4';
-    uiConfig.authBGVideoImgPath = 'main_v_bg';
-
-    //uiConfig.navHidden = true;
-    uiConfig.navColor = Colors.blue.value;
-    uiConfig.navText = '一键登录';
-    uiConfig.navTextColor = Colors.blue.value;
-    uiConfig.navReturnImgPath = 'return_bg'; //图片必须存在
-
-    uiConfig.logoWidth = 100;
-    uiConfig.logoHeight = 80;
-    //uiConfig.logoOffsetX = isiOS ? 0 : null;//(screenWidth/2 - uiConfig.logoWidth/2).toInt();
-    uiConfig.logoOffsetY = 10;
-    uiConfig.logoVerticalLayout = JVLayoutItem.superView;
-    uiConfig.logoHidden = false;
-    uiConfig.logoImgPath = 'logo';
-
-    uiConfig.numberFieldWidth = 200;
-    uiConfig.numberFieldHeight = 40;
-    //uiConfig.numFieldOffsetX = isiOS ? 0 : null;//(screenWidth/2 - uiConfig.numberFieldWidth/2).toInt();
-    uiConfig.numFieldOffsetY = isiOS ? 20 : 120;
-    uiConfig.numberVerticalLayout = JVLayoutItem.logo;
-    uiConfig.numberColor = Colors.black.value;
-    uiConfig.numberSize = 18;
-
-    uiConfig.sloganOffsetY = isiOS ? 20 : 160;
-    uiConfig.sloganVerticalLayout = JVLayoutItem.number;
-    uiConfig.sloganTextColor = Colors.black.value;
-    uiConfig.sloganTextSize = 15;
-//        uiConfig.slogan
-    //uiConfig.sloganHidden = 0;
-
-    uiConfig.loginButtonWidth = 220;
-    uiConfig.loginButtonHeight = 50;
-    //uiConfig.loginButtonOffsetX = isiOS ? 0 : null;//(screenWidth/2 - uiConfig.loginButtonWidth/2).toInt();
-    uiConfig.loginButtonOffsetY = isiOS ? 20 : 230;
-    uiConfig.loginButtonVerticalLayout = JVLayoutItem.slogan;
-    uiConfig.loginButtonText = '登录按钮';
-    uiConfig.loginButtonTextColor = Colors.black.value;
-    uiConfig.loginButtonTextSize = 16;
-    uiConfig.loginBtnNormalImage = 'login_btn_normal'; //图片必须存在
-    uiConfig.loginBtnPressedImage = 'login_btn_press'; //图片必须存在
-    uiConfig.loginBtnUnableImage = 'login_btn_unable'; //图片必须存在
-
-    uiConfig.privacyHintToast = true; //only android 设置隐私条款不选中时点击登录按钮默认显示toast。
-
-    uiConfig.privacyState = true; //设置默认勾选
-    uiConfig.privacyCheckboxSize = 20;
-    uiConfig.checkedImgPath = 'check_image'; //图片必须存在
-    uiConfig.uncheckedImgPath = 'uncheck_image'; //图片必须存在
-    uiConfig.privacyCheckboxInCenter = true;
-    uiConfig.privacyCheckboxHidden = false;
-
-    //uiConfig.privacyOffsetX = isiOS ? (20 + uiConfig.privacyCheckboxSize) : null;
-    uiConfig.privacyOffsetY = 15; // 距离底部距离
-    // uiConfig.privacyVerticalLayout = JVLayoutItem.superView;
-    uiConfig.clauseBaseColor = Colors.black.value;
-    uiConfig.clauseColor = Colors.red.value;
-    uiConfig.privacyText = ['前缀', '后缀'];
-    uiConfig.privacyTextSize = 13;
-    uiConfig.privacy = [
-      JVPrivacy('自定义协议1', 'http://www.baidu.com', separator: '*'),
-      JVPrivacy('自定义协议2', 'http://www.baidu.com', separator: '、'),
-      JVPrivacy('自定义协议3', 'http://www.baidu.com', separator: '、'),
-    ];
-    uiConfig.textVerAlignment = 1;
-    uiConfig.privacyWithBookTitleMark = true;
-    uiConfig.privacyTextCenterGravity = true;
-    uiConfig.authStatusBarStyle = JVStatusBarStyle.darkContent;
-    uiConfig.privacyStatusBarStyle = JVStatusBarStyle.defaultStyle;
-    uiConfig.modelTransitionStyle = JVIOSUIModalTransitionStyle.crossDissolve;
-
-    // uiConfig.statusBarColorWithNav = true;
-    // uiConfig.virtualButtonTransparent = true;
-    //
-    // uiConfig.privacyStatusBarColorWithNav = true;
-    // uiConfig.privacyVirtualButtonTransparent = true;
-
-    uiConfig.needStartAnim = true;
-    uiConfig.needCloseAnim = true;
-    // uiConfig.enterAnim = 'activity_slide_enter_bottom';
-    // uiConfig.exitAnim = 'activity_slide_exit_bottom';
-
-    uiConfig.privacyNavColor = Colors.blue.value;
-    uiConfig.privacyNavTitleTextColor = Colors.black.value;
-    uiConfig.privacyNavTitleTextSize = 16;
-    uiConfig.privacyNavTitleTitle = '运营商协议政策'; //only ios
-    uiConfig.privacyNavReturnBtnImage = 'return_bg'; //图片必须存在;
-    uiConfig.modelTransitionStyle = JVIOSUIModalTransitionStyle.coverVertical;
-
-    final result = await FlJVerify().setCustomAuthorizationView(uiConfig);
+    final result = await JVerifyUI.setUiConfig();
     text = result.toString();
     setState(() {});
   }
@@ -240,4 +144,146 @@ class ElevatedText extends StatelessWidget {
   @override
   Widget build(BuildContext context) =>
       ElevatedButton(onPressed: onPressed, child: Text(title));
+}
+
+class JVerifyUI {
+  JVerifyUI._();
+
+  static Future<bool> setUiConfig() async {
+    if (isIOS) {
+      return await setIOSUiConfig();
+    } else if (isAndroid) {
+      return await setAndroidUiConfig();
+    }
+    return false;
+  }
+
+  static Future<bool> setIOSUiConfig() async {
+    JVIOSUIConfig config = JVIOSUIConfig();
+
+    config.navColor = Colors.white.value;
+    config.navText = '';
+    config.navTextColor = Colors.black.value;
+    config.navReturnImgPath = 'back'; //图片必须存在
+
+    config.logoWidth = 100;
+    config.logoHeight = 80;
+    config.logoOffsetY = 10;
+    config.logoVerticalLayout = JVLayoutItem.superView;
+    config.logoHidden = false;
+    config.logoImgPath = 'logo';
+
+    config.numberFieldWidth = 200;
+    config.numberFieldHeight = 40;
+    config.numFieldOffsetY = 20;
+    config.numberVerticalLayout = JVLayoutItem.logo;
+    config.numberColor = Colors.black.value;
+    config.numberSize = 18;
+
+    config.sloganOffsetY = 20;
+    config.sloganVerticalLayout = JVLayoutItem.number;
+    config.sloganTextColor = Colors.black.value;
+    config.sloganTextSize = 15;
+//        config.slogan
+    //config.sloganHidden = 0;
+    config.logoImgPath = 'logo';
+    config.logoOffsetY = 100;
+    config.logoWidth = 90;
+    config.logoHeight = 90;
+    config.loginButtonWidth = 220;
+    config.loginButtonHeight = 50;
+    config.loginButtonOffsetY = 20;
+    config.loginButtonText = '授权登录';
+    config.loginButtonTextColor = Colors.white.value;
+    config.loginButtonTextSize = 20;
+    config.loginButtonVerticalLayout = JVLayoutItem.slogan;
+    config.loginBtnNormalImage = 'login_btn_press';
+    config.loginBtnPressedImage = 'login_btn_press';
+    config.loginBtnUnableImage = 'login_btn_press';
+    config.privacyHintToast = true;
+    config.privacyState = true; //设置默认勾选
+    config.privacyCheckboxSize = 18;
+    config.checkedImgPath = 'check'; //图片必须存在
+    config.uncheckedImgPath = 'uncheck'; //图片必须存在
+    config.privacyCheckboxInCenter = true;
+    config.privacyText = ['请勾选', ''];
+    config.privacyCheckboxHidden = false;
+    config.privacyOffsetY = 10; // 距离底部距离
+    config.clauseBaseColor = Colors.blue.value;
+    config.privacyTextSize = 13;
+    config.privacy = [
+      JVPrivacy('协议', 'http://www.baidu.com', separator: '*'),
+    ];
+    config.clauseColor = Colors.blueAccent.value;
+    config.textVerAlignment = 1;
+    config.privacyWithBookTitleMark = true;
+    config.privacyTextCenterGravity = true;
+    config.authStatusBarStyle = JVStatusBarStyle.darkContent;
+    config.privacyStatusBarStyle = JVStatusBarStyle.defaultStyle;
+    config.modelTransitionStyle = JVIOSUIModalTransitionStyle.crossDissolve;
+    config.needStartAnim = true;
+    config.privacyNavColor = Colors.blueAccent.value;
+    config.privacyNavTitleTextColor = Colors.black.value;
+    config.privacyNavTitleTextSize = 16;
+    config.privacyNavTitleTitle = '运营商协议政策'; //only ios
+    config.privacyNavReturnBtnImage = 'back'; //图片必须存在;
+    config.modelTransitionStyle = JVIOSUIModalTransitionStyle.coverVertical;
+    final value = await FlJVerify().setAuthorizationView(config);
+    log('设置ios 认证UI $value');
+    return value;
+  }
+
+  static Future<bool> setAndroidUiConfig() async {
+    JVAndroidUIConfig config = JVAndroidUIConfig();
+    config.navColor = Colors.white.value;
+    config.navText = '';
+    config.navTextColor = Colors.black.value;
+    config.navReturnImgPath = 'back'; //图片必须存在
+    config.statusBarTransparent = true;
+
+    config.logoHidden = false;
+    config.logoWidth = 90;
+    config.logoHeight = 90;
+
+    config.numberFieldWidth = 200;
+    config.numberFieldHeight = 40;
+    config.numberColor = Colors.black.value;
+    config.numberSize = 18;
+
+    config.sloganTextColor = Colors.black.value;
+    config.sloganTextSize = 15;
+
+    config.loginButtonWidth = 220;
+    config.loginButtonHeight = 50;
+    config.loginButtonText = '授权登录';
+    config.loginButtonTextColor = Colors.white.value;
+    config.loginButtonTextSize = 20;
+    config.loginButtonBackgroundPath = 'login_btn_bg';
+
+    config.privacyHintToast = true;
+    config.privacyState = true; //设置默认勾选
+    config.privacyCheckboxSize = 18;
+    config.checkedImgPath = 'check'; //图片必须存在
+    config.uncheckedImgPath = 'uncheck'; //图片必须存在
+    config.privacyCheckboxInCenter = true;
+    config.privacyText = ['请勾选', ''];
+    config.privacyCheckboxHidden = false;
+    // config.privacyOffsetY = 10; // 距离底部距离
+    config.clauseBaseColor = Colors.black.value;
+    config.privacyTextSize = 13;
+    config.privacy = [
+      // JVPrivacy('协议', 'http://www.baidu.com', separator: '*'),
+    ];
+    config.clauseColor = Colors.blue.value;
+    config.privacyWithBookTitleMark = true;
+    config.privacyTextCenterGravity = true;
+    config.needStartAnim = true;
+    config.privacyNavColor = Colors.blue.value;
+    config.privacyNavTitleTextColor = Colors.black.value;
+    config.privacyNavTitleTextSize = 16;
+    config.privacyNavReturnBtnImage = 'back'; //图片必须存在;
+    final value = await FlJVerify().setAuthorizationView(config);
+    log('设置android 认证UI $value');
+    return value;
+  }
 }

@@ -132,12 +132,12 @@ class FlJVerify {
   }
 
   /*
-  * 设置授权页面
+  * 设置授权页面UI
   * @para portraitConfig    竖屏的 UI 配置 支持 ios 或者 android
   * @para landscapeConfig   Android 横屏的 UI 配置，该配置只生效在 Android
   * @para widgets           自定义添加的控件
   * */
-  Future<bool> setCustomAuthorizationView(JVGeneralUIConfig portraitConfig,
+  Future<bool> setAuthorizationView(JVGeneralUIConfig portraitConfig,
       {JVAndroidUIConfig? landscapeConfig,
       List<JVCustomWidget>? widgets}) async {
     Map<String, dynamic> para = {};
@@ -322,8 +322,11 @@ class JVGeneralUIConfig {
   List<String>? privacyText;
   int? privacyTextSize;
   List<JVPrivacy>? privacy;
+
+  /// 选择框
   String? uncheckedImgPath;
   String? checkedImgPath;
+
   int? privacyCheckboxSize;
   int? clauseBaseColor;
   int? clauseColor;
@@ -434,6 +437,8 @@ class JVIOSUIConfig extends JVGeneralUIConfig {
 
   /// 登录按钮
   JVLayoutItem? loginButtonVerticalLayout;
+
+  /// 登录按钮背景图需要设置三个参数才有效果
   String? loginBtnNormalImage;
   String? loginBtnPressedImage;
   String? loginBtnUnableImage;
@@ -598,25 +603,24 @@ class JVAndroidUIConfig extends JVGeneralUIConfig {
 class JVPopViewConfig {
   int? width;
   int? height;
-  int offsetCenterX = 0;
 
   /// 窗口相对屏幕中心的x轴偏移量
-  int offsetCenterY = 0;
+  int offsetCenterX = 0;
 
   /// 窗口相对屏幕中心的y轴偏移量
-  bool isBottom = false;
+  int offsetCenterY = 0;
 
   /// only Android，窗口是否居屏幕底部。设置后 offsetCenterY 将失效，
-  double popViewCornerRadius = 5.0;
+  bool isBottom = false;
 
   /// only ios，弹窗圆角大小，Android 从 AndroidManifest 配置中读取
-  double backgroundAlpha = 0.3;
+  double popViewCornerRadius = 5.0;
 
   /// only ios，背景的透明度，Android 从 AndroidManifest 配置中读取
-
-  bool? isPopViewTheme;
+  double backgroundAlpha = 0.3;
 
   /// 是否支持弹窗模式
+  bool? isPopViewTheme;
 
   JVPopViewConfig() {
     isPopViewTheme = true;
