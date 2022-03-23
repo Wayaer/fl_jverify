@@ -1,14 +1,25 @@
 package com.fl.jverify
 
 import android.content.Context
-import cn.jiguang.verifysdk.api.AuthPageEventListener
-import cn.jiguang.verifysdk.api.JVerificationInterface
-import cn.jiguang.verifysdk.api.LoginSettings
+import android.graphics.BitmapFactory
+import android.graphics.Paint
+import android.graphics.drawable.BitmapDrawable
+import android.graphics.drawable.Drawable
+import android.graphics.drawable.StateListDrawable
+import android.view.Gravity
+import android.widget.Button
+import android.widget.RelativeLayout
+import android.widget.TextView
+import cn.jiguang.verifysdk.api.*
 import io.flutter.embedding.engine.plugins.FlutterPlugin
 import io.flutter.embedding.engine.plugins.FlutterPlugin.FlutterPluginBinding
 import io.flutter.plugin.common.MethodCall
 import io.flutter.plugin.common.MethodChannel
 import io.flutter.plugin.common.MethodChannel.MethodCallHandler
+import org.json.JSONArray
+import org.json.JSONException
+import org.json.JSONObject
+import java.lang.reflect.Field
 
 /**
  * FlJVerifyPlugin
@@ -46,10 +57,10 @@ class FlJVerifyPlugin : FlutterPlugin, MethodCallHandler {
                 }
                 JVerificationInterface.init(context, timeout!!) { code, message ->
                     result.success(
-                            mapOf(
-                                    codeKey to code,
-                                    msgKey to message
-                            )
+                        mapOf(
+                            codeKey to code,
+                            msgKey to message
+                        )
                     )
                 }
             }
@@ -64,23 +75,26 @@ class FlJVerifyPlugin : FlutterPlugin, MethodCallHandler {
                 result.success(JVerificationInterface.checkVerifyEnable(context))
             }
             "getToken" -> {
-                JVerificationInterface.getToken(context, call.arguments as Int) { code, message, operator ->
+                JVerificationInterface.getToken(
+                    context,
+                    call.arguments as Int
+                ) { code, message, operator ->
                     result.success(
-                            mapOf(
-                                    codeKey to code,
-                                    msgKey to message,
-                                    oprKey to operator
-                            )
+                        mapOf(
+                            codeKey to code,
+                            msgKey to message,
+                            oprKey to operator
+                        )
                     )
                 }
             }
             "preLogin" -> {
                 JVerificationInterface.preLogin(context, call.arguments as Int) { code, message ->
                     result.success(
-                            mapOf(
-                                    codeKey to code,
-                                    msgKey to message
-                            )
+                        mapOf(
+                            codeKey to code,
+                            msgKey to message
+                        )
                     )
                 }
             }
@@ -93,21 +107,60 @@ class FlJVerifyPlugin : FlutterPlugin, MethodCallHandler {
                 settings.authPageEventListener = object : AuthPageEventListener() {
                     override fun onEvent(code: Int, msg: String) {
                         channel!!.invokeMethod(
-                                "onReceiveAuthPageEvent", mapOf(
+                            "onReceiveAuthPageEvent", mapOf(
                                 codeKey to code,
                                 msgKey to msg
-                        )
+                            )
                         )
                     }
                 }
                 JVerificationInterface.loginAuth(context, settings) { code, msg, operator ->
                     result.success(
-                            mapOf(
-                                    codeKey to code,
-                                    msgKey to msg,
-                                    oprKey to operator
-                            )
+                        mapOf(
+                            codeKey to code,
+                            msgKey to msg,
+                            oprKey to operator
+                        )
                     )
+                }
+            }
+            "setCustomAuthorizationView" -> {
+                val portraitConfig = call.argument<Map<*, *>>("portraitConfig")!!
+                val landscapeConfig = call.argument<Map<*, *>?>("landscapeConfig")
+                val widgetList = call.argument<List<Map<*, *>>>("widgets")
+
+                val portraitBuilder = JVerifyUIConfig.Builder()
+                val landscapeBuilder = JVerifyUIConfig.Builder()
+
+
+                /// 布局 SDK 授权界面原有 UI
+                layoutOriginOauthView(portraitConfig, portraitBuilder)
+                if (landscapeConfig != null) {
+                    layoutOriginOauthView(landscapeConfig, landscapeBuilder)
+                }
+                if (widgetList != null) {
+                    for (widgetMap in widgetList) {
+                        /// 新增自定义的控件
+                        val type = widgetMap["type"] as String?
+                        if (type == "textView") {
+                            addCustomTextWidgets(widgetMap, portraitBuilder)
+                            if (landscapeConfig != null) {
+                                addCustomTextWidgets(widgetMap, landscapeBuilder)
+                            }
+                        } else if (type == "button") {
+                            addCustomButtonWidgets(widgetMap, portraitBuilder)
+                            if (landscapeConfig != null) {
+                                addCustomButtonWidgets(widgetMap, landscapeBuilder)
+                            }
+                        }
+                    }
+                }
+                val portrait = portraitBuilder.build()
+                if (landscapeConfig != null) {
+                    val landscape = landscapeBuilder.build()
+                    JVerificationInterface.setCustomUIWithConfig(portrait, landscape)
+                } else {
+                    JVerificationInterface.setCustomUIWithConfig(portrait)
                 }
             }
             "dismissLoginAuthPage" -> {
@@ -124,10 +177,10 @@ class FlJVerifyPlugin : FlutterPlugin, MethodCallHandler {
                 val tempId = call.argument<String>("tempId")
                 JVerificationInterface.getSmsCode(context, phoneNum, signId, tempId) { code, msg ->
                     result.success(
-                            mapOf(
-                                    codeKey to code,
-                                    msgKey to msg,
-                            )
+                        mapOf(
+                            codeKey to code,
+                            msgKey to msg,
+                        )
                     )
                 }
             }
@@ -145,13 +198,704 @@ class FlJVerifyPlugin : FlutterPlugin, MethodCallHandler {
         try {
             val aClass = JVerificationInterface::class.java
             val method = aClass.getDeclaredMethod(
-                    "setControlWifiSwitch",
-                    Boolean::class.javaPrimitiveType
+                "setControlWifiSwitch",
+                Boolean::class.javaPrimitiveType
             )
             method.isAccessible = true
             method.invoke(aClass, false)
         } catch (e: Exception) {
             e.printStackTrace()
         }
+    }
+
+    /**
+     * 自定义 SDK 原有的授权界面里的 UI
+     */
+    private fun layoutOriginOauthView(uiConfig: Map<*, *>, builder: JVerifyUIConfig.Builder) {
+
+
+        val navColor = valueForKey(uiConfig, "navColor")
+        val navText = valueForKey(uiConfig, "navText")
+        val navTextColor = valueForKey(uiConfig, "navTextColor")
+        val navTextBold = valueForKey(uiConfig, "navTextBold")
+        val navReturnImgPath = valueForKey(uiConfig, "navReturnImgPath")
+        val navHidden = valueForKey(uiConfig, "navHidden")
+        val navReturnBtnHidden = valueForKey(uiConfig, "navReturnBtnHidden")
+        val navTransparent = valueForKey(uiConfig, "navTransparent")
+        val logoImgPath = valueForKey(uiConfig, "logoImgPath")
+        val logoWidth = valueForKey(uiConfig, "logoWidth")
+        val logoHeight = valueForKey(uiConfig, "logoHeight")
+        val logoOffsetY = valueForKey(uiConfig, "logoOffsetY")
+        val logoOffsetX = valueForKey(uiConfig, "logoOffsetX")
+        val logoHidden = valueForKey(uiConfig, "logoHidden")
+        val logoOffsetBottomY = valueForKey(uiConfig, "logoOffsetBottomY")
+        val numberColor = valueForKey(uiConfig, "numberColor")
+        val numberSize = valueForKey(uiConfig, "numberSize")
+        val numberTextBold = valueForKey(uiConfig, "numberTextBold")
+        val numFieldOffsetY = valueForKey(uiConfig, "numFieldOffsetY")
+        val numFieldOffsetX = valueForKey(uiConfig, "numFieldOffsetX")
+        val numberFieldOffsetBottomY = valueForKey(uiConfig, "numberFieldOffsetBottomY")
+        val numberFieldWidth = valueForKey(uiConfig, "numberFieldWidth")
+        val numberFieldHeight = valueForKey(uiConfig, "numberFieldHeight")
+        val logBtnText = valueForKey(uiConfig, "logBtnText")
+        val logBtnOffsetY = valueForKey(uiConfig, "logBtnOffsetY")
+        val logBtnOffsetX = valueForKey(uiConfig, "logBtnOffsetX")
+        val logBtnBottomOffsetY = valueForKey(uiConfig, "logBtnBottomOffsetY")
+        val logBtnWidth = valueForKey(uiConfig, "logBtnWidth")
+        val logBtnHeight = valueForKey(uiConfig, "logBtnHeight")
+        val logBtnTextSize = valueForKey(uiConfig, "logBtnTextSize")
+        val logBtnTextColor = valueForKey(uiConfig, "logBtnTextColor")
+        val logBtnTextBold = valueForKey(uiConfig, "logBtnTextBold")
+        val logBtnBackgroundPath = valueForKey(uiConfig, "logBtnBackgroundPath")
+        val uncheckedImgPath = valueForKey(uiConfig, "uncheckedImgPath")
+        val checkedImgPath = valueForKey(uiConfig, "checkedImgPath")
+        val privacyTopOffsetY = valueForKey(uiConfig, "privacyTopOffsetY")
+        val privacyOffsetY = valueForKey(uiConfig, "privacyOffsetY")
+        val privacyOffsetX = valueForKey(uiConfig, "privacyOffsetX")
+        val clauseBaseColor = valueForKey(uiConfig, "clauseBaseColor")
+        val clauseColor = valueForKey(uiConfig, "clauseColor")
+        val privacyTextCenterGravity = valueForKey(uiConfig, "privacyTextCenterGravity")
+
+
+        val privacyTextBold = valueForKey(uiConfig, "privacyTextBold")
+        val privacyCheckboxHidden = valueForKey(uiConfig, "privacyCheckboxHidden")
+        val privacyCheckboxSize = valueForKey(uiConfig, "privacyCheckboxSize")
+        val privacyWithBookTitleMark = valueForKey(uiConfig, "privacyWithBookTitleMark")
+        val privacyCheckboxInCenter = valueForKey(uiConfig, "privacyCheckboxInCenter")
+        val privacyState = valueForKey(uiConfig, "privacyState")
+        val sloganOffsetY = valueForKey(uiConfig, "sloganOffsetY")
+        val sloganTextColor = valueForKey(uiConfig, "sloganTextColor")
+        val sloganOffsetX = valueForKey(uiConfig, "sloganOffsetX")
+        val sloganBottomOffsetY = valueForKey(uiConfig, "sloganBottomOffsetY")
+        val sloganTextSize = valueForKey(uiConfig, "sloganTextSize")
+        val sloganHidden = valueForKey(uiConfig, "sloganHidden")
+        val sloganTextBold = valueForKey(uiConfig, "sloganTextBold")
+        val privacyUnderlineText = valueForKey(uiConfig, "privacyUnderlineText")
+        val privacyNavColor = valueForKey(uiConfig, "privacyNavColor")
+        val privacyNavTitleTextColor = valueForKey(uiConfig, "privacyNavTitleTextColor")
+        val privacyNavTitleTextSize = valueForKey(uiConfig, "privacyNavTitleTextSize")
+        val privacyNavTitleTextBold = valueForKey(uiConfig, "privacyNavTitleTextBold")
+        val privacyNavReturnBtnPath = valueForKey(uiConfig, "privacyNavReturnBtnImage")
+        val statusBarColorWithNav = valueForKey(uiConfig, "statusBarColorWithNav")
+        val statusBarDarkMode = valueForKey(uiConfig, "statusBarDarkMode")
+        val statusBarTransparent = valueForKey(uiConfig, "statusBarTransparent")
+        val statusBarHidden = valueForKey(uiConfig, "statusBarHidden")
+        val virtualButtonTransparent = valueForKey(uiConfig, "virtualButtonTransparent")
+        val privacyStatusBarColorWithNav = valueForKey(uiConfig, "privacyStatusBarColorWithNav")
+        val privacyStatusBarDarkMode = valueForKey(uiConfig, "privacyStatusBarDarkMode")
+        val privacyStatusBarTransparent = valueForKey(uiConfig, "privacyStatusBarTransparent")
+        val privacyStatusBarHidden = valueForKey(uiConfig, "privacyStatusBarHidden")
+        val privacyVirtualButtonTransparent =
+            valueForKey(uiConfig, "privacyVirtualButtonTransparent")
+        val needStartAnim = valueForKey(uiConfig, "needStartAnim")
+        val needCloseAnim = valueForKey(uiConfig, "needCloseAnim")
+        val popViewConfig = valueForKey(uiConfig, "popViewConfig")
+        val privacyHintToast = valueForKey(uiConfig, "privacyHintToast")
+        val privacy = valueForKey(uiConfig, "privacy")
+        /************* 状态栏  *******/
+        if (statusBarColorWithNav != null) {
+            builder.setStatusBarColorWithNav((statusBarColorWithNav as Boolean?)!!)
+        }
+        if (statusBarDarkMode != null) {
+            builder.setStatusBarDarkMode((statusBarDarkMode as Boolean?)!!)
+        }
+        if (statusBarTransparent != null) {
+            builder.setStatusBarTransparent((statusBarTransparent as Boolean?)!!)
+        }
+        if (statusBarHidden != null) {
+            builder.setStatusBarHidden((statusBarHidden as Boolean?)!!)
+        }
+        if (virtualButtonTransparent != null) {
+            builder.setVirtualButtonTransparent((virtualButtonTransparent as Boolean?)!!)
+        }
+        /************** web页  */
+        if (privacyStatusBarColorWithNav != null) {
+            builder.setPrivacyStatusBarColorWithNav((privacyStatusBarColorWithNav as Boolean?)!!)
+        }
+        if (privacyStatusBarDarkMode != null) {
+            builder.setPrivacyStatusBarDarkMode((privacyStatusBarDarkMode as Boolean?)!!)
+        }
+        if (privacyStatusBarTransparent != null) {
+            builder.setPrivacyStatusBarTransparent((privacyStatusBarTransparent as Boolean?)!!)
+        }
+        if (privacyStatusBarHidden != null) {
+            builder.setPrivacyStatusBarHidden((privacyStatusBarHidden as Boolean?)!!)
+        }
+        if (privacyVirtualButtonTransparent != null) {
+            builder.setPrivacyVirtualButtonTransparent((privacyVirtualButtonTransparent as Boolean?)!!)
+        }
+        /************** 动画支持  */
+        if (needStartAnim != null) {
+            builder.setNeedStartAnim((needStartAnim as Boolean?)!!)
+        }
+        if (needCloseAnim != null) {
+            builder.setNeedCloseAnim((needCloseAnim as Boolean?)!!)
+        }
+        val enterAnim = valueForKey(uiConfig, "enterAnim")
+        val exitAnim = valueForKey(uiConfig, "exitAnim")
+        if (enterAnim != null && exitAnim != null) {
+            val enterA = ResourceUtil.getAnimId(context!!, enterAnim as String?)
+            val exitA = ResourceUtil.getAnimId(context!!, exitAnim as String?)
+            if (enterA >= 0 && exitA >= 0) {
+                builder.overridePendingTransition(enterA, exitA)
+            }
+        }
+        /************** 背景  */
+
+
+        val authBackgroundImage = valueForKey(uiConfig, "authBackgroundImage")
+
+
+        if (authBackgroundImage != null) {
+            val resId = getResourceByReflect(authBackgroundImage as String?)
+            if (resId > 0) {
+                builder.setAuthBGImgPath(authBackgroundImage as String?)
+            }
+        }
+        val authBGGifPath = valueForKey(uiConfig, "authBGGifPath")
+        if (authBGGifPath != null) {
+            val resId = getResourceByReflect(authBGGifPath as String?)
+            if (resId > 0) {
+                builder.setAuthBGGifPath(authBGGifPath as String?)
+            }
+        }
+        var authBGVideoPath = valueForKey(uiConfig, "authBGVideoPath")
+        val authBGVideoImgPath = valueForKey(uiConfig, "authBGVideoImgPath")
+        if (authBGVideoPath != null) {
+            if (!(authBGVideoPath as String).startsWith("http")) authBGVideoPath =
+                "android.resource://" + context!!.packageName + "/raw/" + authBGVideoPath
+            builder.setAuthBGVideoPath(authBGVideoPath as String?, authBGVideoImgPath as String?)
+        }
+        /************** nav  */
+        if (navHidden != null) {
+            builder.setNavHidden((navHidden as Boolean?)!!)
+        }
+        if (navReturnBtnHidden != null) {
+            builder.setNavReturnBtnHidden((navReturnBtnHidden as Boolean?)!!)
+        }
+        if (navTransparent != null) {
+            builder.setNavTransparent((navTransparent as Boolean?)!!)
+        }
+        if (navColor != null) {
+            builder.setNavColor(exchangeObject(navColor))
+        }
+        if (navText != null) {
+            builder.setNavText(navText as String?)
+        }
+        if (navTextColor != null) {
+            builder.setNavTextColor(exchangeObject(navTextColor))
+        }
+        if (navTextBold != null) {
+            builder.setNavTextBold((navTextBold as Boolean?)!!)
+        }
+        if (navReturnImgPath != null) {
+            builder.setNavReturnImgPath(navReturnImgPath as String?)
+        }
+        /************** logo  */
+        if (logoWidth != null) {
+            builder.setLogoWidth((logoWidth as Int?)!!)
+        }
+        if (logoHeight != null) {
+            builder.setLogoHeight((logoHeight as Int?)!!)
+        }
+        if (logoOffsetY != null) {
+            builder.setLogoOffsetY((logoOffsetY as Int?)!!)
+        }
+        if (logoOffsetX != null) {
+            builder.setLogoOffsetX((logoOffsetX as Int?)!!)
+        }
+        if (logoHidden != null) {
+            builder.setLogoHidden((logoHidden as Boolean?)!!)
+        }
+        if (logoImgPath != null) {
+            val resId = getResourceByReflect(logoImgPath as String?)
+            if (resId > 0) {
+                builder.setLogoImgPath(logoImgPath as String?)
+            }
+        }
+        if (logoOffsetBottomY != null) {
+            builder.setLogoOffsetBottomY((logoOffsetBottomY as Int?)!!)
+        }
+        /************** number  */
+        if (numberFieldOffsetBottomY != null) {
+            builder.setNumberFieldOffsetBottomY((numberFieldOffsetBottomY as Int?)!!)
+        }
+        if (numFieldOffsetY != null) {
+            builder.setNumFieldOffsetY((numFieldOffsetY as Int?)!!)
+        }
+        if (numFieldOffsetX != null) {
+            builder.setNumFieldOffsetX((numFieldOffsetX as Int?)!!)
+        }
+        if (numberFieldWidth != null) {
+            builder.setNumberFieldWidth((numberFieldWidth as Int?)!!)
+        }
+        if (numberFieldHeight != null) {
+            builder.setNumberFieldHeight((numberFieldHeight as Int?)!!)
+        }
+        if (numberColor != null) {
+            builder.setNumberColor(exchangeObject(numberColor))
+        }
+        if (numberSize != null) {
+            builder.setNumberSize(numberSize as Number?)
+        }
+        if (numberTextBold != null) {
+            builder.setNumberTextBold((numberTextBold as Boolean?)!!)
+        }
+        /************** slogan  */
+        if (sloganOffsetY != null) {
+            builder.setSloganOffsetY((sloganOffsetY as Int?)!!)
+        }
+        if (sloganOffsetX != null) {
+            builder.setSloganOffsetX((sloganOffsetX as Int?)!!)
+        }
+        if (sloganBottomOffsetY != null) {
+            builder.setSloganBottomOffsetY((sloganBottomOffsetY as Int?)!!)
+        }
+        if (sloganTextSize != null) {
+            builder.setSloganTextSize((sloganTextSize as Int?)!!)
+        }
+        if (sloganTextColor != null) {
+            builder.setSloganTextColor(exchangeObject(sloganTextColor))
+        }
+        if (sloganHidden != null) {
+            builder.setSloganHidden((sloganHidden as Boolean?)!!)
+        }
+        if (sloganTextBold != null) {
+            builder.setSloganTextBold((sloganTextBold as Boolean?)!!)
+        }
+        /************** login btn  */
+        if (logBtnOffsetY != null) {
+            builder.setLogBtnOffsetY((logBtnOffsetY as Int?)!!)
+        }
+        if (logBtnOffsetX != null) {
+            builder.setLogBtnOffsetX((logBtnOffsetX as Int?)!!)
+        }
+        if (logBtnBottomOffsetY != null) {
+            builder.setLogBtnBottomOffsetY((logBtnBottomOffsetY as Int?)!!)
+        }
+        if (logBtnWidth != null) {
+            builder.setLogBtnWidth((logBtnWidth as Int?)!!)
+        }
+        if (logBtnHeight != null) {
+            builder.setLogBtnHeight((logBtnHeight as Int?)!!)
+        }
+        if (logBtnText != null) {
+            builder.setLogBtnText(logBtnText as String?)
+        }
+        if (logBtnTextSize != null) {
+            builder.setLogBtnTextSize((logBtnTextSize as Int?)!!)
+        }
+        if (logBtnTextColor != null) {
+            builder.setLogBtnTextColor(exchangeObject(logBtnTextColor))
+        }
+        if (logBtnTextBold != null) {
+            builder.setLogBtnTextBold((logBtnTextBold as Boolean?)!!)
+        }
+        if (logBtnBackgroundPath != null) {
+            val resId = getResourceByReflect(logBtnBackgroundPath as String?)
+            if (resId > 0) {
+                builder.setLogBtnImgPath(logBtnBackgroundPath as String?)
+            }
+        }
+        /************** check box  */
+        builder.setPrivacyCheckboxHidden((privacyCheckboxHidden as Boolean?)!!)
+        if (privacyCheckboxSize != null) {
+            builder.setPrivacyCheckboxSize((privacyCheckboxSize as Int?)!!)
+        }
+        if (uncheckedImgPath != null) {
+            val resId = getResourceByReflect(uncheckedImgPath as String?)
+            if (resId > 0) {
+                builder.setUncheckedImgPath(uncheckedImgPath as String?)
+            }
+        }
+        if (checkedImgPath != null) {
+            val resId = getResourceByReflect(checkedImgPath as String?)
+            if (resId > 0) {
+                builder.setCheckedImgPath(checkedImgPath as String?)
+            }
+        }
+        /************** privacy  */
+        if (privacyOffsetY != null) {
+            //设置隐私条款相对于授权页面底部下边缘y偏移
+            builder.setPrivacyOffsetY((privacyOffsetY as Int?)!!)
+        } else {
+            if (privacyTopOffsetY != null) {
+                //设置隐私条款相对导航栏下端y轴偏移。since 2.4.8
+                builder.setPrivacyTopOffsetY((privacyTopOffsetY as Int?)!!)
+            }
+        }
+        if (privacyOffsetX != null) {
+            builder.setPrivacyOffsetX((privacyOffsetX as Int?)!!)
+        }
+        if (privacyCheckboxSize != null) {
+            builder.setPrivacyCheckboxSize((privacyCheckboxSize as Int?)!!)
+        }
+        val privacyTextSize = valueForKey(uiConfig, "privacyTextSize")
+        if (privacyTextSize != null) {
+            builder.setPrivacyTextSize((privacyTextSize as Int?)!!)
+        }
+
+        val privacyText = valueForKey(uiConfig, "privacyText") as ArrayList<*>?
+        if (privacyText != null && privacyText.size >= 2) {
+            builder.setPrivacyText(privacyText[0] as String, privacyText[1] as String)
+        }
+        if (privacyTextBold != null) {
+            builder.setPrivacyTextBold((privacyTextBold as Boolean?)!!)
+        }
+        if (privacyUnderlineText != null) {
+            builder.setPrivacyUnderlineText((privacyUnderlineText as Boolean?)!!)
+        }
+        builder.setPrivacyTextCenterGravity((privacyTextCenterGravity as Boolean?)!!)
+        builder.setPrivacyWithBookTitleMark((privacyWithBookTitleMark as Boolean?)!!)
+        builder.setPrivacyCheckboxInCenter((privacyCheckboxInCenter as Boolean?)!!)
+        builder.setPrivacyState((privacyState as Boolean?)!!)
+        if (privacy != null) {
+            try {
+                val jsonArray = JSONArray(privacy as String?)
+                val length = jsonArray.length()
+                var jsonObject: JSONObject
+                var privacyBean: PrivacyBean
+                val privacyBeans = ArrayList<PrivacyBean>(length)
+                for (i in 0 until length) {
+                    jsonObject = jsonArray.optJSONObject(i)
+                    privacyBean = PrivacyBean(
+                        jsonObject.optString("name"), jsonObject.optString("url"),
+                        jsonObject.optString("separator")
+                    )
+                    privacyBeans.add(privacyBean)
+                }
+                builder.setPrivacyNameAndUrlBeanList(privacyBeans)
+            } catch (e: JSONException) {
+                e.printStackTrace()
+            }
+        }
+        var baseColor = -10066330
+        var color = -16007674
+        if (clauseBaseColor != null) {
+            baseColor = if (clauseBaseColor is Long) {
+                clauseBaseColor.toInt()
+            } else {
+                clauseBaseColor as Int
+            }
+        }
+        if (clauseColor != null) {
+            color = if (clauseColor is Long) {
+                clauseColor.toInt()
+            } else {
+                clauseColor as Int
+            }
+        }
+        builder.setAppPrivacyColor(baseColor, color)
+        /************** 隐私 web 页面  */
+        if (privacyNavColor != null) {
+            builder.setPrivacyNavColor(exchangeObject(privacyNavColor))
+        }
+        if (privacyNavTitleTextSize != null) {
+            builder.setPrivacyNavTitleTextSize(exchangeObject(privacyNavTitleTextSize))
+        }
+        if (privacyNavTitleTextColor != null) {
+            builder.setPrivacyNavTitleTextColor(exchangeObject(privacyNavTitleTextColor))
+        }
+
+        if (privacyNavTitleTextBold != null) {
+            builder.setPrivacyNavTitleTextBold((privacyNavTitleTextBold as Boolean?)!!)
+        }
+        if (privacyNavReturnBtnPath != null) {
+            val resId = getResourceByReflect(privacyNavReturnBtnPath as String?)
+            if (resId > 0) {
+                builder.setPrivacyNavReturnBtnPath(privacyNavReturnBtnPath as String?)
+            }
+        }
+        builder.enableHintToast((privacyHintToast as Boolean?)!!, null)
+        /************** 授权页弹窗模式  */
+        if (popViewConfig != null) {
+            val popViewConfigMap = popViewConfig as Map<*, *>
+            val isPopViewTheme = valueForKey(popViewConfigMap, "isPopViewTheme")
+            if ((isPopViewTheme as Boolean?)!!) {
+                val width = valueForKey(popViewConfigMap, "width")
+                val height = valueForKey(popViewConfigMap, "height")
+                val offsetCenterX = valueForKey(popViewConfigMap, "offsetCenterX")
+                val offsetCenterY = valueForKey(popViewConfigMap, "offsetCenterY")
+                val isBottom = valueForKey(popViewConfigMap, "isBottom")
+                builder.setDialogTheme(
+                    width as Int, height as Int, offsetCenterX as Int, offsetCenterY as Int,
+                    (isBottom as Boolean?)!!
+                )
+            }
+        }
+    }
+
+    /** 添加自定义 widget 到 SDK 原有的授权界面里  */
+    /**
+     * 添加自定义 TextView
+     */
+    private fun addCustomTextWidgets(para: Map<*, *>, builder: JVerifyUIConfig.Builder) {
+        val customView = TextView(context)
+
+        //设置text
+        val title = para["title"] as String?
+        customView.text = title
+
+        //设置字体颜色
+        val titleColor = para["titleColor"]
+        if (titleColor != null) {
+            if (titleColor is Long) {
+                customView.setTextColor(titleColor.toInt())
+            } else {
+                customView.setTextColor((titleColor as Int?)!!)
+            }
+        }
+
+        //设置字体大小
+        val font = para["titleFont"]
+        if (font != null) {
+            val titleFont = font as Double
+            if (titleFont > 0) {
+                customView.textSize = titleFont.toFloat()
+            }
+        }
+
+        //设置背景颜色
+        val backgroundColor = para["backgroundColor"]
+        if (backgroundColor != null) {
+            if (backgroundColor is Long) {
+                customView.setBackgroundColor(backgroundColor.toInt())
+            } else {
+                customView.setBackgroundColor((backgroundColor as Int?)!!)
+            }
+        }
+
+        //下划线
+        val isShowUnderline = para["isShowUnderline"] as Boolean?
+        if (isShowUnderline!!) {
+            customView.paint.flags = Paint.UNDERLINE_TEXT_FLAG //下划线
+            customView.paint.isAntiAlias = true //抗锯齿
+        }
+
+        //设置对齐方式
+        val alignmet = para["textAlignment"]
+        if (alignmet != null) {
+            val textAlignment = alignmet as String
+            val gravity = getAlignmentFromString(textAlignment)
+            customView.gravity = gravity
+        }
+        val isSingleLine = para["isSingleLine"] as Boolean
+        customView.isSingleLine = isSingleLine //设置是否单行显示，多余的就 ...
+        val lines = para["lines"] as Int
+        customView.setLines(lines) //设置行数
+
+        // 位置
+        val left = para["left"] as Int
+        val top = para["top"] as Int
+        val width = para["width"] as Int
+        val height = para["height"] as Int
+        val mLayoutParams1 = RelativeLayout.LayoutParams(
+            RelativeLayout.LayoutParams.WRAP_CONTENT,
+            RelativeLayout.LayoutParams.WRAP_CONTENT
+        )
+        mLayoutParams1.leftMargin = dp2Pix(context!!, left.toFloat())
+        mLayoutParams1.topMargin = dp2Pix(context!!, top.toFloat())
+        if (width > 0) {
+            mLayoutParams1.width = dp2Pix(context!!, width.toFloat())
+        }
+        if (height > 0) {
+            mLayoutParams1.height = dp2Pix(context!!, height.toFloat())
+        }
+        customView.layoutParams = mLayoutParams1
+
+        builder.addCustomView(customView, false) { _, _ ->
+            channel!!.invokeMethod("onReceiveClickWidgetEvent", para["widgetId"])
+        }
+    }
+
+    /**
+     * 添加自定义 button
+     */
+    private fun addCustomButtonWidgets(para: Map<*, *>, builder: JVerifyUIConfig.Builder) {
+        val customView = Button(context)
+        //设置text
+        val title = para["title"] as String?
+        customView.text = title
+
+        //设置字体颜色
+        val titleColor = para["titleColor"]
+        if (titleColor != null) {
+            if (titleColor is Long) {
+                customView.setTextColor(titleColor.toInt())
+            } else {
+                customView.setTextColor((titleColor as Int?)!!)
+            }
+        }
+        //设置字体大小
+        val font = para["titleFont"]
+        if (font != null) {
+            val titleFont = font as Double
+            if (titleFont > 0) {
+                customView.textSize = titleFont.toFloat()
+            }
+        }
+        //设置背景颜色
+        val backgroundColor = para["backgroundColor"]
+        if (backgroundColor != null) {
+            if (backgroundColor is Long) {
+                customView.setBackgroundColor(backgroundColor.toInt())
+            } else {
+                customView.setBackgroundColor((backgroundColor as Int?)!!)
+            }
+        }
+
+        // 设置背景图（只支持 button 设置）
+        val btnNormalImageName = para["btnNormalImageName"] as String?
+        var btnPressedImageName = para["btnPressedImageName"] as String?
+        if (btnPressedImageName == null) {
+            btnPressedImageName = btnNormalImageName
+        }
+        setButtonSelector(customView, btnNormalImageName, btnPressedImageName)
+
+        //下划线
+        val isShowUnderline = para["isShowUnderline"] as Boolean?
+        if (isShowUnderline!!) {
+            customView.paint.flags = Paint.UNDERLINE_TEXT_FLAG //下划线
+            customView.paint.isAntiAlias = true //抗锯齿
+        }
+
+        //设置对齐方式
+        val alignment = para["textAlignment"]
+        if (alignment != null) {
+            val textAlignment = alignment as String
+            val gravity = getAlignmentFromString(textAlignment)
+            customView.gravity = gravity
+        }
+        val isSingleLine = para["isSingleLine"] as Boolean
+        customView.isSingleLine = isSingleLine //设置是否单行显示，多余的就 ...
+        val lines = para["lines"] as Int
+        customView.setLines(lines) //设置行数
+
+        // 位置
+        val left = para["left"] as Int
+        val top = para["top"] as Int
+        val width = para["width"] as Int
+        val height = para["height"] as Int
+        val mLayoutParams1 = RelativeLayout.LayoutParams(
+            RelativeLayout.LayoutParams.WRAP_CONTENT,
+            RelativeLayout.LayoutParams.WRAP_CONTENT
+        )
+        mLayoutParams1.leftMargin = dp2Pix(context!!, left.toFloat())
+        mLayoutParams1.topMargin = dp2Pix(context!!, top.toFloat())
+        if (width > 0) {
+            mLayoutParams1.width = dp2Pix(context!!, width.toFloat())
+        }
+        if (height > 0) {
+            mLayoutParams1.height = dp2Pix(context!!, height.toFloat())
+        }
+        customView.layoutParams = mLayoutParams1
+        builder.addCustomView(customView, false) { _, _ ->
+            channel!!.invokeMethod("onReceiveClickWidgetEvent", para["widgetId"])
+        }
+    }
+
+
+    /**
+     * 获取对齐方式
+     */
+    private fun getAlignmentFromString(alignment: String?): Int {
+        var a = 0
+        if (alignment != null) {
+            a = when (alignment) {
+                "left" -> Gravity.START
+                "top" -> Gravity.TOP
+                "right" -> Gravity.END
+                "bottom" -> Gravity.BOTTOM
+                "center" -> Gravity.CENTER
+                else -> Gravity.NO_GRAVITY
+            }
+        }
+        return a
+    }
+
+
+    private fun valueForKey(para: Map<*, *>?, key: String): Any? {
+        return if (para != null && para.containsKey(key)) {
+            para[key]
+        } else {
+            null
+        }
+    }
+
+
+    /**
+     * 设置 button 背景图片点击效果
+     *
+     * @param button          按钮
+     * @param normalImageName 常态下背景图
+     * @param pressImageName  点击时背景图
+     */
+    private fun setButtonSelector(
+        button: Button,
+        normalImageName: String?,
+        pressImageName: String?
+    ) {
+        val drawable = StateListDrawable()
+        val res = context!!.resources
+        val normalResId = getResourceByReflect(normalImageName)
+        val selectResId = getResourceByReflect(pressImageName)
+        val normalBmp = BitmapFactory.decodeResource(res, normalResId)
+        val normalDrawable: Drawable = BitmapDrawable(res, normalBmp)
+        val selectBmp = BitmapFactory.decodeResource(res, selectResId)
+        val selectDrawable: Drawable = BitmapDrawable(res, selectBmp)
+
+        // 未选中
+        drawable.addState(intArrayOf(-android.R.attr.state_pressed), normalDrawable)
+        //选中
+        drawable.addState(intArrayOf(android.R.attr.state_pressed), selectDrawable)
+        button.background = drawable
+    }
+
+    /**
+     * 像素转化成 pix
+     */
+    private fun dp2Pix(context: Context, dp: Float): Int {
+        return try {
+            val density = context.resources.displayMetrics.density
+            (dp * density + 0.5f).toInt()
+        } catch (e: java.lang.Exception) {
+            dp.toInt()
+        }
+    }
+
+    private fun exchangeObject(ob: Any): Int {
+        return if (ob is Long) {
+            ob.toInt()
+        } else {
+            ob as Int
+        }
+    }
+
+    /**
+     * 获取图片名称获取图片的资源id的方法
+     *
+     * @param imageName 图片名
+     * @return resId
+     */
+    private fun getResourceByReflect(imageName: String?): Int {
+        val drawable: Class<*> = R.drawable::class.java
+        val field: Field?
+        var rId = 0
+        if (imageName == null) {
+            return rId
+        }
+        try {
+            field = drawable.getField(imageName)
+            rId = field.getInt(field.name)
+        } catch (e: java.lang.Exception) {
+            rId = 0
+        }
+        if (rId == 0) {
+            rId = context!!.resources.getIdentifier(imageName, "drawable", context!!.packageName)
+        }
+        if (rId == 0) {
+            rId = context!!.resources.getIdentifier(imageName, "mipmap", context!!.packageName)
+        }
+        return rId
     }
 }

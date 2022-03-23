@@ -109,12 +109,11 @@ static BOOL needCloseAnim = FALSE;
             });
         }];
     } else if ([@"setCustomAuthorizationView" isEqualToString:call.method]) {
-        BOOL isAutorotate = [call.arguments[@"isAutorotate"] boolValue];
         NSDictionary *portraitConfig = call.arguments[@"portraitConfig"];
         NSArray *widgets = call.arguments[@"widgets"];
         JVUIConfig *config = [[JVUIConfig alloc] init];
         config.autoLayout = YES;
-        config.shouldAutorotate = isAutorotate;
+        config.shouldAutorotate = [[self getValue:portraitConfig key:@"isAutorotate"] boolValue];
         [self setCustomUIWithUIConfig:config configArguments:portraitConfig];
         [JVERIFICATIONService customUIWithConfig:config customViews:^(UIView *customAreaView) {
             for (NSDictionary *widgetDic in widgets) {
@@ -253,7 +252,7 @@ JVLayoutConstraint *JVLayoutHeight(CGFloat height) {
     uiConfig.navReturnHidden = NO;
 
     /************** logo ***************/
-    JVLayoutItem logoLayoutItem = [self getLayoutItem:[self getValue:config key:@"logoVerticalLayoutItem"]];
+    JVLayoutItem logoLayoutItem = [self getLayoutItem:[self getValue:config key:@"logoVerticalLayout"]];
     NSNumber *logoWidth = [self getNumberValue:config key:@"logoWidth"];
     NSNumber *logoHeight = [self getNumberValue:config key:@"logoHeight"];
     NSNumber *logoOffsetX = [self getNumberValue:config key:@"logoOffsetX"];
@@ -282,7 +281,7 @@ JVLayoutConstraint *JVLayoutHeight(CGFloat height) {
     }
 
     /************** num ***************/
-    JVLayoutItem numberLayoutItem = [self getLayoutItem:[self getValue:config key:@"numberVerticalLayoutItem"]];
+    JVLayoutItem numberLayoutItem = [self getLayoutItem:[self getValue:config key:@"numberVerticalLayout"]];
     NSNumber *numFieldOffsetX = [self getNumberValue:config key:@"numFieldOffsetX"];
     NSNumber *numFieldOffsetY = [self getNumberValue:config key:@"numFieldOffsetY"];
     NSNumber *numberFieldWidth = [self getNumberValue:config key:@"numberFieldWidth"];
@@ -310,7 +309,7 @@ JVLayoutConstraint *JVLayoutHeight(CGFloat height) {
     }
 
     /************** slogan ***************/
-    JVLayoutItem sloganLayoutItem = [self getLayoutItem:[self getValue:config key:@"sloganVerticalLayoutItem"]];
+    JVLayoutItem sloganLayoutItem = [self getLayoutItem:[self getValue:config key:@"sloganVerticalLayout"]];
     NSNumber *sloganOffsetX = [self getNumberValue:config key:@"sloganOffsetX"];
     NSNumber *sloganOffsetY = [self getNumberValue:config key:@"sloganOffsetY"];
     NSNumber *sloganWidth = [self getNumberValue:config key:@"sloganWidth"];
@@ -339,7 +338,7 @@ JVLayoutConstraint *JVLayoutHeight(CGFloat height) {
         uiConfig.sloganFont = [UIFont systemFontOfSize:[sloganTextSize floatValue]];
     }
     /************** login btn ***************/
-    JVLayoutItem logBtnLayoutItem = [self getLayoutItem:[self getValue:config key:@"logBtnVerticalLayoutItem"]];
+    JVLayoutItem logBtnLayoutItem = [self getLayoutItem:[self getValue:config key:@"logBtnVerticalLayout"]];
     NSNumber *logBtnOffsetX = [self getNumberValue:config key:@"logBtnOffsetX"];
     NSNumber *logBtnOffsetY = [self getNumberValue:config key:@"logBtnOffsetY"];
     NSNumber *logBtnWidth = [self getNumberValue:config key:@"logBtnWidth"];
@@ -446,8 +445,8 @@ JVLayoutConstraint *JVLayoutHeight(CGFloat height) {
         }
 
     }
-    if ([[config allKeys] containsObject:@"privacyItem"] && [config[@"privacyItem"] isKindOfClass:[NSString class]]) {
-        NSString *privacyJson = config[@"privacyItem"];
+    if ([[config allKeys] containsObject:@"privacy"] && [config[@"privacy"] isKindOfClass:[NSString class]]) {
+        NSString *privacyJson = config[@"privacy"];
         NSData *privacyData = [privacyJson dataUsingEncoding:NSUTF8StringEncoding];
         NSArray *privacyArr = [NSJSONSerialization JSONObjectWithData:privacyData options:0 error:nil];
         for (NSInteger i = 0; i < privacyArr.count; i++) {
@@ -498,7 +497,6 @@ JVLayoutConstraint *JVLayoutHeight(CGFloat height) {
             [appPrivacyArr addObject:[config[@"privacyText"] objectAtIndex:1]];
             tempSting = [tempSting stringByAppendingString:[config[@"privacyText"] objectAtIndex:1]];
         }
-
     }
 
     //设置
@@ -522,22 +520,8 @@ JVLayoutConstraint *JVLayoutHeight(CGFloat height) {
 
     uiConfig.privacyShowBookSymbol = privacyWithBookTitleMark;
 
-    NSString *clauseName = [self getValue:config key:@"clauseName"];
-    NSString *clauseUrl = [self getValue:config key:@"clauseUrl"];
-    if (![[config allKeys] containsObject:@"privacyItem"] && clauseName && clauseUrl) {
-        uiConfig.appPrivacyOne = @[clauseName, clauseUrl];
-        tempSting = [tempSting stringByAppendingFormat:@"%@%@%@", (privacyWithBookTitleMark ? @"《" : @""), clauseName, (privacyWithBookTitleMark ? @"》" : @"")];
-    }
-
-    NSString *clauseNameTwo = [self getValue:config key:@"clauseNameTwo"];
-    NSString *clauseUrlTwo = [self getValue:config key:@"clauseUrlTwo"];
-    if (![[config allKeys] containsObject:@"privacyItem"] && clauseNameTwo && clauseUrlTwo) {
-        uiConfig.appPrivacyTwo = @[clauseNameTwo, clauseUrlTwo];
-        tempSting = [tempSting stringByAppendingFormat:@"%@%@%@", (privacyWithBookTitleMark ? @"《" : @""), clauseNameTwo, (privacyWithBookTitleMark ? @"》" : @"")];
-    }
-
     NSArray *privacyComponents = [self getValue:config key:@"privacyText"];
-    if (![[config allKeys] containsObject:@"privacyItem"] && privacyComponents.count) {
+    if (![[config allKeys] containsObject:@"privacy"] && privacyComponents.count) {
         uiConfig.privacyComponents = privacyComponents;
         tempSting = [tempSting stringByAppendingString:[privacyComponents componentsJoinedByString:@"、"]];
     }
@@ -547,7 +531,7 @@ JVLayoutConstraint *JVLayoutHeight(CGFloat height) {
         uiConfig.privacyTextFontSize = [privacyTextSize floatValue];
     }
 
-    JVLayoutItem privacyLayoutItem = [self getLayoutItem:[self getValue:config key:@"privacyVerticalLayoutItem"]];
+    JVLayoutItem privacyLayoutItem = [self getLayoutItem:[self getValue:config key:@"privacyVerticalLayout"]];
 
     CGFloat widthScreen = [UIScreen mainScreen].bounds.size.width;
     NSDictionary *popViewConfig = [self getValue:config key:@"popViewConfig"];
@@ -932,7 +916,7 @@ JVLayoutConstraint *JVLayoutHeight(CGFloat height) {
         __weak typeof(self) weakSelf = self;
         dispatch_async(dispatch_get_main_queue(), ^{
             __strong typeof(weakSelf) strongSelf = weakSelf;
-            [strongSelf.channel invokeMethod:@"onReceiveClickWidgetEvent" arguments:@{@"widgetId": widgetId}];
+            [strongSelf.channel invokeMethod:@"onReceiveClickWidgetEvent" arguments:widgetId];
         });
 
     }
