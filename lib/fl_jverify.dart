@@ -1,5 +1,4 @@
 import 'dart:async';
-import 'dart:convert';
 
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
@@ -142,14 +141,15 @@ class FlJVerify {
       {JVAndroidUIConfig? landscapeConfig,
       List<JVCustomWidget>? widgets}) async {
     Map<String, dynamic> para = {};
-    var portraitMap = portraitConfig.toMap();
-    portraitMap.removeWhere((key, value) => value == null);
-    para["portraitConfig"] = portraitMap;
-    if (landscapeConfig != null) {
-      var landscapeMap = landscapeConfig.toMap();
-      landscapeMap.removeWhere((key, value) => value == null);
-      para["landscapeConfig"] = landscapeMap;
+    if (_isAndroid) {
+      assert(portraitConfig is JVAndroidUIConfig);
+      para["portraitConfig"] = (portraitConfig as JVAndroidUIConfig).toMap();
+      para["landscapeConfig"] = landscapeConfig?.toMap();
+    } else {
+      assert(portraitConfig is JVIOSUIConfig);
+      para["portraitConfig"] = (portraitConfig as JVIOSUIConfig).toMap();
     }
+
     if (widgets != null) {
       var widgetList = [];
       for (JVCustomWidget widget in widgets) {
@@ -263,7 +263,7 @@ class JVGeneralUIConfig {
 
   /// 导航栏
   int? navColor;
-  String navText = '登录';
+  String navText = '授权登录';
   int? navTextColor;
   String? navReturnImgPath;
   bool navHidden = false;
@@ -293,13 +293,13 @@ class JVGeneralUIConfig {
   int? sloganTextSize;
 
   /// 登录按钮
-  int? logBtnOffsetX;
-  int? logBtnOffsetY;
-  int? logBtnWidth;
-  int? logBtnHeight;
-  String? logBtnText;
-  int? logBtnTextSize;
-  int? logBtnTextColor;
+  int? loginButtonOffsetX;
+  int? loginButtonOffsetY;
+  int? loginButtonWidth;
+  int? loginButtonHeight;
+  String? loginButtonText;
+  int? loginButtonTextSize;
+  int? loginButtonTextColor;
 
   /// 设置隐私条款不选中时点击登录按钮默认弹出toast。
   bool privacyHintToast = true;
@@ -356,7 +356,65 @@ class JVGeneralUIConfig {
   /// 授权页弹窗模式 配置，选填
   JVPopViewConfig? popViewConfig;
 
-  Map<String, dynamic> toMap() => {};
+  Map<String, dynamic> toMap() => {
+        'privacy': privacy?.map((e) => e.toMap()).toList(),
+        'authBackgroundImage': authBackgroundImage,
+        'authBGGifPath': authBGGifPath,
+        'authBGVideoPath': authBGVideoPath,
+        'authBGVideoImgPath': authBGVideoImgPath,
+        'navColor': navColor,
+        'navText': navText,
+        'navTextColor': navTextColor,
+        'navReturnImgPath': navReturnImgPath,
+        'navHidden': navHidden,
+        'navReturnBtnHidden': navReturnBtnHidden,
+        'navTransparent': navTransparent,
+        'logoImgPath': logoImgPath,
+        'logoWidth': logoWidth,
+        'logoHeight': logoHeight,
+        'logoOffsetY': logoOffsetY,
+        'logoOffsetX': logoOffsetX,
+        'logoHidden': logoHidden,
+        'numberColor': numberColor,
+        'numberSize': numberSize,
+        'numFieldOffsetY': numFieldOffsetY,
+        'numFieldOffsetX': numFieldOffsetX,
+        'numberFieldWidth': numberFieldWidth,
+        'numberFieldHeight': numberFieldHeight,
+        'loginButtonText': loginButtonText,
+        'loginButtonOffsetY': loginButtonOffsetY,
+        'loginButtonOffsetX': loginButtonOffsetX,
+        'loginButtonWidth': loginButtonWidth,
+        'loginButtonHeight': loginButtonHeight,
+        'loginButtonTextSize': loginButtonTextSize,
+        'loginButtonTextColor': loginButtonTextColor,
+        'uncheckedImgPath': uncheckedImgPath,
+        'checkedImgPath': checkedImgPath,
+        'privacyCheckboxSize': privacyCheckboxSize,
+        'privacyHintToast': privacyHintToast,
+        'privacyOffsetY': privacyOffsetY,
+        'privacyOffsetX': privacyOffsetX,
+        'privacyText': privacyText,
+        'privacyTextSize': privacyTextSize,
+        'clauseBaseColor': clauseBaseColor,
+        'clauseColor': clauseColor,
+        'sloganOffsetY': sloganOffsetY,
+        'sloganTextColor': sloganTextColor,
+        'sloganOffsetX': sloganOffsetX,
+        'sloganTextSize': sloganTextSize,
+        'privacyState': privacyState,
+        'privacyCheckboxInCenter': privacyCheckboxInCenter,
+        'privacyTextCenterGravity': privacyTextCenterGravity,
+        'privacyCheckboxHidden': privacyCheckboxHidden,
+        'privacyWithBookTitleMark': privacyWithBookTitleMark,
+        'privacyNavColor': privacyNavColor,
+        'privacyNavTitleTextColor': privacyNavTitleTextColor,
+        'privacyNavTitleTextSize': privacyNavTitleTextSize,
+        'privacyNavReturnBtnImage': privacyNavReturnBtnImage,
+        'popViewConfig': popViewConfig?.toMap(),
+        'needStartAnim': needStartAnim,
+        'needCloseAnim': needCloseAnim,
+      }..removeWhere((key, value) => value == null);
 }
 
 class JVIOSUIConfig extends JVGeneralUIConfig {
@@ -375,13 +433,13 @@ class JVIOSUIConfig extends JVGeneralUIConfig {
   int? sloganHeight;
 
   /// 登录按钮
-  JVLayoutItem? logBtnVerticalLayout;
+  JVLayoutItem? loginButtonVerticalLayout;
   String? loginBtnNormalImage;
   String? loginBtnPressedImage;
   String? loginBtnUnableImage;
 
   /// 隐私协议栏
-  JVLayoutItem privacyVerticalLayout = JVLayoutItem.superView;
+  // JVLayoutItem privacyVerticalLayout = JVLayoutItem.superView;
 
   /// 设置条款文字是否垂直居中对齐(默认居中对齐) 0是top 1是m 2是b
   int? textVerAlignment = 1;
@@ -408,8 +466,28 @@ class JVIOSUIConfig extends JVGeneralUIConfig {
   @override
   Map<String, dynamic> toMap() {
     final map = super.toMap();
-    map.addAll({});
-    return map;
+    map.addAll({
+      'isAutorotate': isAutorotate,
+      'logoVerticalLayout': _getStringFromEnum(logoVerticalLayout),
+      'numberVerticalLayout': _getStringFromEnum(numberVerticalLayout),
+      'sloganVerticalLayout': _getStringFromEnum(sloganVerticalLayout),
+      'sloganWidth': sloganWidth,
+      'sloganHeight': sloganHeight,
+      'loginButtonVerticalLayout':
+          _getStringFromEnum(loginButtonVerticalLayout),
+      'loginBtnNormalImage': loginBtnNormalImage,
+      'loginBtnPressedImage': loginBtnPressedImage,
+      'loginBtnUnableImage': loginBtnUnableImage,
+      // 'privacyVerticalLayout': _getStringFromEnum(privacyVerticalLayout),
+      'privacyNavTitleTitle': privacyNavTitleTitle,
+      'privacyNavTitleTitle1': privacyNavTitleTitle1,
+      'privacyNavTitleTitle2': privacyNavTitleTitle2,
+      'authStatusBarStyle': _getStringFromEnum(authStatusBarStyle),
+      'privacyStatusBarStyle': _getStringFromEnum(privacyStatusBarStyle),
+      'modelTransitionStyle': _getStringFromEnum(modelTransitionStyle),
+      'textVerAlignment': textVerAlignment,
+    });
+    return map..removeWhere((key, value) => value == null);
   }
 }
 
@@ -430,9 +508,9 @@ class JVAndroidUIConfig extends JVGeneralUIConfig {
   bool sloganHidden = false;
 
   /// 登录按钮
-  int? logBtnBottomOffsetY;
-  bool? logBtnTextBold;
-  String? logBtnBackgroundPath;
+  int? loginButtonBottomOffsetY;
+  bool? loginButtonTextBold;
+  String? loginButtonBackgroundPath;
   int? privacyTopOffsetY;
   bool? privacyTextBold;
 
@@ -474,123 +552,45 @@ class JVAndroidUIConfig extends JVGeneralUIConfig {
   bool virtualButtonTransparent = false;
 
   /// 拉起授权页时进入动画 only android
-  String? enterAnim;
+  String enterAnim = 'activity_slide_enter_bottom';
 
   /// 退出授权页时动画 only android
-  String? exitAnim;
+  String exitAnim = 'activity_slide_exit_bottom';
 
   @override
   Map<String, dynamic> toMap() {
     final map = super.toMap();
-    map.addAll({});
-    return map;
+    map.addAll({
+      'navTextBold': navTextBold,
+      'logoOffsetBottomY': logoOffsetBottomY,
+      'numberTextBold': numberTextBold,
+      'numberFieldOffsetBottomY': numberFieldOffsetBottomY,
+      'loginButtonBottomOffsetY': loginButtonBottomOffsetY,
+      'loginButtonTextBold': loginButtonTextBold,
+      'loginButtonBackgroundPath': loginButtonBackgroundPath,
+      'privacyTopOffsetY': privacyTopOffsetY,
+      'privacyTextBold': privacyTextBold,
+      'privacyUnderlineText': privacyUnderlineText,
+      'sloganBottomOffsetY': sloganBottomOffsetY,
+      'sloganHidden': sloganHidden,
+      'sloganTextBold': sloganTextBold,
+      'privacyNavTitleTextBold': privacyNavTitleTextBold,
+      'privacyStatusBarColorWithNav': privacyStatusBarColorWithNav,
+      'privacyStatusBarDarkMode': privacyStatusBarDarkMode,
+      'privacyStatusBarTransparent': privacyStatusBarTransparent,
+      'privacyStatusBarHidden': privacyStatusBarHidden,
+      'privacyVirtualButtonTransparent': privacyVirtualButtonTransparent,
+      'statusBarColorWithNav': statusBarColorWithNav,
+      'statusBarDarkMode': statusBarDarkMode,
+      'statusBarTransparent': statusBarTransparent,
+      'statusBarHidden': statusBarHidden,
+      'virtualButtonTransparent': virtualButtonTransparent,
+      'enterAnim': enterAnim,
+      'exitAnim': exitAnim,
+    });
+    return map..removeWhere((key, value) => value == null);
   }
 }
-
-// class JVUIConfig {
-//   Map<String, dynamic> toJsonMap() => {
-//         'privacy': privacy != null ? json.encode(privacy) : null,
-//         'authBackgroundImage': authBackgroundImage,
-//         'authBGGifPath': authBGGifPath,
-//         'authBGVideoPath': authBGVideoPath,
-//         'authBGVideoImgPath': authBGVideoImgPath,
-//         'navColor': navColor,
-//         'navText': navText,
-//         'navTextColor': navTextColor,
-//         'navTextBold': navTextBold,
-//         'navReturnImgPath': navReturnImgPath,
-//         'navHidden': navHidden,
-//         'navReturnBtnHidden': navReturnBtnHidden,
-//         'navTransparent': navTransparent,
-//         'logoImgPath': logoImgPath,
-//         'logoWidth': logoWidth,
-//         'logoHeight': logoHeight,
-//         'logoOffsetY': logoOffsetY,
-//         'logoOffsetX': logoOffsetX,
-//         'logoOffsetBottomY': logoOffsetBottomY,
-//         'logoVerticalLayoutItem': _getStringFromEnum(logoVerticalLayout),
-//         'logoHidden': logoHidden,
-//         'numberColor': numberColor,
-//         'numberSize': numberSize,
-//         'numberTextBold': numberTextBold,
-//         'numFieldOffsetY': numFieldOffsetY,
-//         'numFieldOffsetX': numFieldOffsetX,
-//         'numberFieldOffsetBottomY': numberFieldOffsetBottomY,
-//         'numberFieldWidth': numberFieldWidth,
-//         'numberFieldHeight': numberFieldHeight,
-//         'numberVerticalLayout': _getStringFromEnum(numberVerticalLayout),
-//         'logBtnText': logBtnText,
-//         'logBtnOffsetY': logBtnOffsetY,
-//         'logBtnOffsetX': logBtnOffsetX,
-//         'logBtnBottomOffsetY': logBtnBottomOffsetY,
-//         'logBtnWidth': logBtnWidth,
-//         'logBtnHeight': logBtnHeight,
-//         'logBtnVerticalLayout': _getStringFromEnum(logBtnVerticalLayout),
-//         'logBtnTextSize': logBtnTextSize,
-//         'logBtnTextColor': logBtnTextColor,
-//         'logBtnTextBold': logBtnTextBold,
-//         'logBtnBackgroundPath': logBtnBackgroundPath,
-//         'loginBtnNormalImage': loginBtnNormalImage,
-//         'loginBtnPressedImage': loginBtnPressedImage,
-//         'loginBtnUnableImage': loginBtnUnableImage,
-//         'uncheckedImgPath': uncheckedImgPath,
-//         'checkedImgPath': checkedImgPath,
-//         'privacyCheckboxSize': privacyCheckboxSize,
-//         'privacyHintToast': privacyHintToast,
-//         'privacyOffsetY': privacyOffsetY,
-//         'privacyOffsetX': privacyOffsetX,
-//         'privacyTopOffsetY': privacyTopOffsetY,
-//         'privacyVerticalLayout': _getStringFromEnum(privacyVerticalLayout),
-//         'privacyText': privacyText,
-//         'privacyTextSize': privacyTextSize,
-//         'privacyTextBold': privacyTextBold,
-//         'privacyUnderlineText': privacyUnderlineText,
-//         'clauseBaseColor': clauseBaseColor,
-//         'clauseColor': clauseColor,
-//         'sloganOffsetY': sloganOffsetY,
-//         'sloganTextColor': sloganTextColor,
-//         'sloganOffsetX': sloganOffsetX,
-//         'sloganBottomOffsetY': sloganBottomOffsetY,
-//         'sloganVerticalLayout': _getStringFromEnum(sloganVerticalLayout),
-//         'sloganTextSize': sloganTextSize,
-//         'sloganWidth': sloganWidth,
-//         'sloganHeight': sloganHeight,
-//         'sloganHidden': sloganHidden,
-//         'sloganTextBold': sloganTextBold,
-//         'privacyState': privacyState,
-//         'privacyCheckboxInCenter': privacyCheckboxInCenter,
-//         'privacyTextCenterGravity': privacyTextCenterGravity,
-//         'privacyCheckboxHidden': privacyCheckboxHidden,
-//         'privacyWithBookTitleMark': privacyWithBookTitleMark,
-//         'privacyNavColor': privacyNavColor,
-//         'privacyNavTitleTextColor': privacyNavTitleTextColor,
-//         'privacyNavTitleTextSize': privacyNavTitleTextSize,
-//         'privacyNavTitleTextBold': privacyNavTitleTextBold,
-//         'privacyNavTitleTitle1': privacyNavTitleTitle1,
-//         'privacyNavTitleTitle2': privacyNavTitleTitle2,
-//         'privacyNavReturnBtnImage': privacyNavReturnBtnImage,
-//         'popViewConfig': popViewConfig?.toMap(),
-//         'privacyStatusBarColorWithNav': privacyStatusBarColorWithNav,
-//         'privacyStatusBarDarkMode': privacyStatusBarDarkMode,
-//         'privacyStatusBarTransparent': privacyStatusBarTransparent,
-//         'privacyStatusBarHidden': privacyStatusBarHidden,
-//         'privacyVirtualButtonTransparent': privacyVirtualButtonTransparent,
-//         'statusBarColorWithNav': statusBarColorWithNav,
-//         'statusBarDarkMode': statusBarDarkMode,
-//         'statusBarTransparent': statusBarTransparent,
-//         'statusBarHidden': statusBarHidden,
-//         'virtualButtonTransparent': virtualButtonTransparent,
-//         'authStatusBarStyle': _getStringFromEnum(authStatusBarStyle),
-//         'privacyStatusBarStyle': _getStringFromEnum(privacyStatusBarStyle),
-//         'modelTransitionStyle': _getStringFromEnum(modelTransitionStyle),
-//         'needStartAnim': needStartAnim,
-//         'needCloseAnim': needCloseAnim,
-//         'enterAnim': enterAnim,
-//         'exitAnim': exitAnim,
-//         'privacyNavTitleTitle': privacyNavTitleTitle,
-//         'textVerAlignment': textVerAlignment,
-//       }..removeWhere((key, value) => value == null);
-// }
 
 /// 授权页弹窗模式配置
 /// 注意：Android 的相关配置可以从 AndroidManifest 中配置，具体做法参考https: /// docs.jiguang.cn/jverification/client/android_api/#sdk_11
@@ -763,22 +763,14 @@ enum JVStatusBarStyle {
 class JVPrivacy {
   String? name;
   String? url;
-  String? beforeName;
-  String? afterName;
 
   /// ios分隔符专属
   String? separator;
 
-  JVPrivacy(this.name, this.url,
-      {this.beforeName, this.afterName, this.separator});
+  JVPrivacy(this.name, this.url, {this.separator});
 
-  Map<String, dynamic> toMap() => {
-        'name': name,
-        'url': url,
-        'beforeName': beforeName,
-        'afterName': afterName,
-        'separator': separator
-      };
+  Map<String, dynamic> toMap() =>
+      {'name': name, 'url': url, 'separator': separator};
 
   Map<String, dynamic> toJson() =>
       toMap()..removeWhere((key, value) => value == null);

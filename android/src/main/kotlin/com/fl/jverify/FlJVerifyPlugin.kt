@@ -16,9 +16,6 @@ import io.flutter.embedding.engine.plugins.FlutterPlugin.FlutterPluginBinding
 import io.flutter.plugin.common.MethodCall
 import io.flutter.plugin.common.MethodChannel
 import io.flutter.plugin.common.MethodChannel.MethodCallHandler
-import org.json.JSONArray
-import org.json.JSONException
-import org.json.JSONObject
 import java.lang.reflect.Field
 
 /**
@@ -57,10 +54,10 @@ class FlJVerifyPlugin : FlutterPlugin, MethodCallHandler {
                 }
                 JVerificationInterface.init(context, timeout!!) { code, message ->
                     result.success(
-                        mapOf(
-                            codeKey to code,
-                            msgKey to message
-                        )
+                            mapOf(
+                                    codeKey to code,
+                                    msgKey to message
+                            )
                     )
                 }
             }
@@ -76,25 +73,25 @@ class FlJVerifyPlugin : FlutterPlugin, MethodCallHandler {
             }
             "getToken" -> {
                 JVerificationInterface.getToken(
-                    context,
-                    call.arguments as Int
+                        context,
+                        call.arguments as Int
                 ) { code, message, operator ->
                     result.success(
-                        mapOf(
-                            codeKey to code,
-                            msgKey to message,
-                            oprKey to operator
-                        )
+                            mapOf(
+                                    codeKey to code,
+                                    msgKey to message,
+                                    oprKey to operator
+                            )
                     )
                 }
             }
             "preLogin" -> {
                 JVerificationInterface.preLogin(context, call.arguments as Int) { code, message ->
                     result.success(
-                        mapOf(
-                            codeKey to code,
-                            msgKey to message
-                        )
+                            mapOf(
+                                    codeKey to code,
+                                    msgKey to message
+                            )
                     )
                 }
             }
@@ -107,20 +104,20 @@ class FlJVerifyPlugin : FlutterPlugin, MethodCallHandler {
                 settings.authPageEventListener = object : AuthPageEventListener() {
                     override fun onEvent(code: Int, msg: String) {
                         channel!!.invokeMethod(
-                            "onReceiveAuthPageEvent", mapOf(
+                                "onReceiveAuthPageEvent", mapOf(
                                 codeKey to code,
                                 msgKey to msg
-                            )
+                        )
                         )
                     }
                 }
                 JVerificationInterface.loginAuth(context, settings) { code, msg, operator ->
                     result.success(
-                        mapOf(
-                            codeKey to code,
-                            msgKey to msg,
-                            oprKey to operator
-                        )
+                            mapOf(
+                                    codeKey to code,
+                                    msgKey to msg,
+                                    oprKey to operator
+                            )
                     )
                 }
             }
@@ -177,10 +174,10 @@ class FlJVerifyPlugin : FlutterPlugin, MethodCallHandler {
                 val tempId = call.argument<String>("tempId")
                 JVerificationInterface.getSmsCode(context, phoneNum, signId, tempId) { code, msg ->
                     result.success(
-                        mapOf(
-                            codeKey to code,
-                            msgKey to msg,
-                        )
+                            mapOf(
+                                    codeKey to code,
+                                    msgKey to msg,
+                            )
                     )
                 }
             }
@@ -198,8 +195,8 @@ class FlJVerifyPlugin : FlutterPlugin, MethodCallHandler {
         try {
             val aClass = JVerificationInterface::class.java
             val method = aClass.getDeclaredMethod(
-                "setControlWifiSwitch",
-                Boolean::class.javaPrimitiveType
+                    "setControlWifiSwitch",
+                    Boolean::class.javaPrimitiveType
             )
             method.isAccessible = true
             method.invoke(aClass, false)
@@ -212,87 +209,11 @@ class FlJVerifyPlugin : FlutterPlugin, MethodCallHandler {
      * 自定义 SDK 原有的授权界面里的 UI
      */
     private fun layoutOriginOauthView(uiConfig: Map<*, *>, builder: JVerifyUIConfig.Builder) {
-
-
-        val navColor = valueForKey(uiConfig, "navColor")
-        val navText = valueForKey(uiConfig, "navText")
-        val navTextColor = valueForKey(uiConfig, "navTextColor")
-        val navTextBold = valueForKey(uiConfig, "navTextBold")
-        val navReturnImgPath = valueForKey(uiConfig, "navReturnImgPath")
-        val navHidden = valueForKey(uiConfig, "navHidden")
-        val navReturnBtnHidden = valueForKey(uiConfig, "navReturnBtnHidden")
-        val navTransparent = valueForKey(uiConfig, "navTransparent")
-        val logoImgPath = valueForKey(uiConfig, "logoImgPath")
-        val logoWidth = valueForKey(uiConfig, "logoWidth")
-        val logoHeight = valueForKey(uiConfig, "logoHeight")
-        val logoOffsetY = valueForKey(uiConfig, "logoOffsetY")
-        val logoOffsetX = valueForKey(uiConfig, "logoOffsetX")
-        val logoHidden = valueForKey(uiConfig, "logoHidden")
-        val logoOffsetBottomY = valueForKey(uiConfig, "logoOffsetBottomY")
-        val numberColor = valueForKey(uiConfig, "numberColor")
-        val numberSize = valueForKey(uiConfig, "numberSize")
-        val numberTextBold = valueForKey(uiConfig, "numberTextBold")
-        val numFieldOffsetY = valueForKey(uiConfig, "numFieldOffsetY")
-        val numFieldOffsetX = valueForKey(uiConfig, "numFieldOffsetX")
-        val numberFieldOffsetBottomY = valueForKey(uiConfig, "numberFieldOffsetBottomY")
-        val numberFieldWidth = valueForKey(uiConfig, "numberFieldWidth")
-        val numberFieldHeight = valueForKey(uiConfig, "numberFieldHeight")
-        val logBtnText = valueForKey(uiConfig, "logBtnText")
-        val logBtnOffsetY = valueForKey(uiConfig, "logBtnOffsetY")
-        val logBtnOffsetX = valueForKey(uiConfig, "logBtnOffsetX")
-        val logBtnBottomOffsetY = valueForKey(uiConfig, "logBtnBottomOffsetY")
-        val logBtnWidth = valueForKey(uiConfig, "logBtnWidth")
-        val logBtnHeight = valueForKey(uiConfig, "logBtnHeight")
-        val logBtnTextSize = valueForKey(uiConfig, "logBtnTextSize")
-        val logBtnTextColor = valueForKey(uiConfig, "logBtnTextColor")
-        val logBtnTextBold = valueForKey(uiConfig, "logBtnTextBold")
-        val logBtnBackgroundPath = valueForKey(uiConfig, "logBtnBackgroundPath")
-        val uncheckedImgPath = valueForKey(uiConfig, "uncheckedImgPath")
-        val checkedImgPath = valueForKey(uiConfig, "checkedImgPath")
-        val privacyTopOffsetY = valueForKey(uiConfig, "privacyTopOffsetY")
-        val privacyOffsetY = valueForKey(uiConfig, "privacyOffsetY")
-        val privacyOffsetX = valueForKey(uiConfig, "privacyOffsetX")
-        val clauseBaseColor = valueForKey(uiConfig, "clauseBaseColor")
-        val clauseColor = valueForKey(uiConfig, "clauseColor")
-        val privacyTextCenterGravity = valueForKey(uiConfig, "privacyTextCenterGravity")
-
-
-        val privacyTextBold = valueForKey(uiConfig, "privacyTextBold")
-        val privacyCheckboxHidden = valueForKey(uiConfig, "privacyCheckboxHidden")
-        val privacyCheckboxSize = valueForKey(uiConfig, "privacyCheckboxSize")
-        val privacyWithBookTitleMark = valueForKey(uiConfig, "privacyWithBookTitleMark")
-        val privacyCheckboxInCenter = valueForKey(uiConfig, "privacyCheckboxInCenter")
-        val privacyState = valueForKey(uiConfig, "privacyState")
-        val sloganOffsetY = valueForKey(uiConfig, "sloganOffsetY")
-        val sloganTextColor = valueForKey(uiConfig, "sloganTextColor")
-        val sloganOffsetX = valueForKey(uiConfig, "sloganOffsetX")
-        val sloganBottomOffsetY = valueForKey(uiConfig, "sloganBottomOffsetY")
-        val sloganTextSize = valueForKey(uiConfig, "sloganTextSize")
-        val sloganHidden = valueForKey(uiConfig, "sloganHidden")
-        val sloganTextBold = valueForKey(uiConfig, "sloganTextBold")
-        val privacyUnderlineText = valueForKey(uiConfig, "privacyUnderlineText")
-        val privacyNavColor = valueForKey(uiConfig, "privacyNavColor")
-        val privacyNavTitleTextColor = valueForKey(uiConfig, "privacyNavTitleTextColor")
-        val privacyNavTitleTextSize = valueForKey(uiConfig, "privacyNavTitleTextSize")
-        val privacyNavTitleTextBold = valueForKey(uiConfig, "privacyNavTitleTextBold")
-        val privacyNavReturnBtnPath = valueForKey(uiConfig, "privacyNavReturnBtnImage")
+        /************* 状态栏  *******/
         val statusBarColorWithNav = valueForKey(uiConfig, "statusBarColorWithNav")
         val statusBarDarkMode = valueForKey(uiConfig, "statusBarDarkMode")
         val statusBarTransparent = valueForKey(uiConfig, "statusBarTransparent")
         val statusBarHidden = valueForKey(uiConfig, "statusBarHidden")
-        val virtualButtonTransparent = valueForKey(uiConfig, "virtualButtonTransparent")
-        val privacyStatusBarColorWithNav = valueForKey(uiConfig, "privacyStatusBarColorWithNav")
-        val privacyStatusBarDarkMode = valueForKey(uiConfig, "privacyStatusBarDarkMode")
-        val privacyStatusBarTransparent = valueForKey(uiConfig, "privacyStatusBarTransparent")
-        val privacyStatusBarHidden = valueForKey(uiConfig, "privacyStatusBarHidden")
-        val privacyVirtualButtonTransparent =
-            valueForKey(uiConfig, "privacyVirtualButtonTransparent")
-        val needStartAnim = valueForKey(uiConfig, "needStartAnim")
-        val needCloseAnim = valueForKey(uiConfig, "needCloseAnim")
-        val popViewConfig = valueForKey(uiConfig, "popViewConfig")
-        val privacyHintToast = valueForKey(uiConfig, "privacyHintToast")
-        val privacy = valueForKey(uiConfig, "privacy")
-        /************* 状态栏  *******/
         if (statusBarColorWithNav != null) {
             builder.setStatusBarColorWithNav((statusBarColorWithNav as Boolean?)!!)
         }
@@ -305,10 +226,17 @@ class FlJVerifyPlugin : FlutterPlugin, MethodCallHandler {
         if (statusBarHidden != null) {
             builder.setStatusBarHidden((statusBarHidden as Boolean?)!!)
         }
+        val virtualButtonTransparent = valueForKey(uiConfig, "virtualButtonTransparent")
         if (virtualButtonTransparent != null) {
             builder.setVirtualButtonTransparent((virtualButtonTransparent as Boolean?)!!)
         }
         /************** web页  */
+        val privacyStatusBarColorWithNav = valueForKey(uiConfig, "privacyStatusBarColorWithNav")
+        val privacyStatusBarDarkMode = valueForKey(uiConfig, "privacyStatusBarDarkMode")
+        val privacyStatusBarTransparent = valueForKey(uiConfig, "privacyStatusBarTransparent")
+        val privacyStatusBarHidden = valueForKey(uiConfig, "privacyStatusBarHidden")
+        val privacyVirtualButtonTransparent =
+                valueForKey(uiConfig, "privacyVirtualButtonTransparent")
         if (privacyStatusBarColorWithNav != null) {
             builder.setPrivacyStatusBarColorWithNav((privacyStatusBarColorWithNav as Boolean?)!!)
         }
@@ -325,6 +253,8 @@ class FlJVerifyPlugin : FlutterPlugin, MethodCallHandler {
             builder.setPrivacyVirtualButtonTransparent((privacyVirtualButtonTransparent as Boolean?)!!)
         }
         /************** 动画支持  */
+        val needStartAnim = valueForKey(uiConfig, "needStartAnim")
+        val needCloseAnim = valueForKey(uiConfig, "needCloseAnim")
         if (needStartAnim != null) {
             builder.setNeedStartAnim((needStartAnim as Boolean?)!!)
         }
@@ -363,10 +293,18 @@ class FlJVerifyPlugin : FlutterPlugin, MethodCallHandler {
         val authBGVideoImgPath = valueForKey(uiConfig, "authBGVideoImgPath")
         if (authBGVideoPath != null) {
             if (!(authBGVideoPath as String).startsWith("http")) authBGVideoPath =
-                "android.resource://" + context!!.packageName + "/raw/" + authBGVideoPath
+                    "android.resource://" + context!!.packageName + "/raw/" + authBGVideoPath
             builder.setAuthBGVideoPath(authBGVideoPath as String?, authBGVideoImgPath as String?)
         }
         /************** nav  */
+        val navColor = valueForKey(uiConfig, "navColor")
+        val navText = valueForKey(uiConfig, "navText")
+        val navTextColor = valueForKey(uiConfig, "navTextColor")
+        val navTextBold = valueForKey(uiConfig, "navTextBold")
+        val navReturnImgPath = valueForKey(uiConfig, "navReturnImgPath")
+        val navHidden = valueForKey(uiConfig, "navHidden")
+        val navReturnBtnHidden = valueForKey(uiConfig, "navReturnBtnHidden")
+        val navTransparent = valueForKey(uiConfig, "navTransparent")
         if (navHidden != null) {
             builder.setNavHidden((navHidden as Boolean?)!!)
         }
@@ -392,6 +330,13 @@ class FlJVerifyPlugin : FlutterPlugin, MethodCallHandler {
             builder.setNavReturnImgPath(navReturnImgPath as String?)
         }
         /************** logo  */
+        val logoImgPath = valueForKey(uiConfig, "logoImgPath")
+        val logoWidth = valueForKey(uiConfig, "logoWidth")
+        val logoHeight = valueForKey(uiConfig, "logoHeight")
+        val logoOffsetY = valueForKey(uiConfig, "logoOffsetY")
+        val logoOffsetX = valueForKey(uiConfig, "logoOffsetX")
+        val logoHidden = valueForKey(uiConfig, "logoHidden")
+        val logoOffsetBottomY = valueForKey(uiConfig, "logoOffsetBottomY")
         if (logoWidth != null) {
             builder.setLogoWidth((logoWidth as Int?)!!)
         }
@@ -417,6 +362,15 @@ class FlJVerifyPlugin : FlutterPlugin, MethodCallHandler {
             builder.setLogoOffsetBottomY((logoOffsetBottomY as Int?)!!)
         }
         /************** number  */
+
+        val numberColor = valueForKey(uiConfig, "numberColor")
+        val numberSize = valueForKey(uiConfig, "numberSize")
+        val numberTextBold = valueForKey(uiConfig, "numberTextBold")
+        val numFieldOffsetY = valueForKey(uiConfig, "numFieldOffsetY")
+        val numFieldOffsetX = valueForKey(uiConfig, "numFieldOffsetX")
+        val numberFieldOffsetBottomY = valueForKey(uiConfig, "numberFieldOffsetBottomY")
+        val numberFieldWidth = valueForKey(uiConfig, "numberFieldWidth")
+        val numberFieldHeight = valueForKey(uiConfig, "numberFieldHeight")
         if (numberFieldOffsetBottomY != null) {
             builder.setNumberFieldOffsetBottomY((numberFieldOffsetBottomY as Int?)!!)
         }
@@ -442,6 +396,13 @@ class FlJVerifyPlugin : FlutterPlugin, MethodCallHandler {
             builder.setNumberTextBold((numberTextBold as Boolean?)!!)
         }
         /************** slogan  */
+        val sloganOffsetY = valueForKey(uiConfig, "sloganOffsetY")
+        val sloganTextColor = valueForKey(uiConfig, "sloganTextColor")
+        val sloganOffsetX = valueForKey(uiConfig, "sloganOffsetX")
+        val sloganBottomOffsetY = valueForKey(uiConfig, "sloganBottomOffsetY")
+        val sloganTextSize = valueForKey(uiConfig, "sloganTextSize")
+        val sloganHidden = valueForKey(uiConfig, "sloganHidden")
+        val sloganTextBold = valueForKey(uiConfig, "sloganTextBold")
         if (sloganOffsetY != null) {
             builder.setSloganOffsetY((sloganOffsetY as Int?)!!)
         }
@@ -464,40 +425,55 @@ class FlJVerifyPlugin : FlutterPlugin, MethodCallHandler {
             builder.setSloganTextBold((sloganTextBold as Boolean?)!!)
         }
         /************** login btn  */
-        if (logBtnOffsetY != null) {
-            builder.setLogBtnOffsetY((logBtnOffsetY as Int?)!!)
+        val loginButtonText = valueForKey(uiConfig, "loginButtonText")
+        val loginButtonOffsetY = valueForKey(uiConfig, "loginButtonOffsetY")
+        val loginButtonOffsetX = valueForKey(uiConfig, "loginButtonOffsetX")
+        val loginButtonBottomOffsetY = valueForKey(uiConfig, "loginButtonBottomOffsetY")
+        val loginButtonWidth = valueForKey(uiConfig, "loginButtonWidth")
+        val loginButtonHeight = valueForKey(uiConfig, "loginButtonHeight")
+        val loginButtonTextSize = valueForKey(uiConfig, "loginButtonTextSize")
+        val loginButtonTextColor = valueForKey(uiConfig, "loginButtonTextColor")
+        val loginButtonTextBold = valueForKey(uiConfig, "loginButtonTextBold")
+        val loginButtonBackgroundPath = valueForKey(uiConfig, "loginButtonBackgroundPath")
+        if (loginButtonOffsetY != null) {
+            builder.setLogBtnOffsetY((loginButtonOffsetY as Int?)!!)
         }
-        if (logBtnOffsetX != null) {
-            builder.setLogBtnOffsetX((logBtnOffsetX as Int?)!!)
+        if (loginButtonOffsetX != null) {
+            builder.setLogBtnOffsetX((loginButtonOffsetX as Int?)!!)
         }
-        if (logBtnBottomOffsetY != null) {
-            builder.setLogBtnBottomOffsetY((logBtnBottomOffsetY as Int?)!!)
+        if (loginButtonBottomOffsetY != null) {
+            builder.setLogBtnBottomOffsetY((loginButtonBottomOffsetY as Int?)!!)
         }
-        if (logBtnWidth != null) {
-            builder.setLogBtnWidth((logBtnWidth as Int?)!!)
+        if (loginButtonWidth != null) {
+            builder.setLogBtnWidth((loginButtonWidth as Int?)!!)
         }
-        if (logBtnHeight != null) {
-            builder.setLogBtnHeight((logBtnHeight as Int?)!!)
+        if (loginButtonHeight != null) {
+            builder.setLogBtnHeight((loginButtonHeight as Int?)!!)
         }
-        if (logBtnText != null) {
-            builder.setLogBtnText(logBtnText as String?)
+        if (loginButtonText != null) {
+            builder.setLogBtnText(loginButtonText as String?)
         }
-        if (logBtnTextSize != null) {
-            builder.setLogBtnTextSize((logBtnTextSize as Int?)!!)
+        if (loginButtonTextSize != null) {
+            builder.setLogBtnTextSize((loginButtonTextSize as Int?)!!)
         }
-        if (logBtnTextColor != null) {
-            builder.setLogBtnTextColor(exchangeObject(logBtnTextColor))
+        if (loginButtonTextColor != null) {
+            builder.setLogBtnTextColor(exchangeObject(loginButtonTextColor))
         }
-        if (logBtnTextBold != null) {
-            builder.setLogBtnTextBold((logBtnTextBold as Boolean?)!!)
+        if (loginButtonTextBold != null) {
+            builder.setLogBtnTextBold((loginButtonTextBold as Boolean?)!!)
         }
-        if (logBtnBackgroundPath != null) {
-            val resId = getResourceByReflect(logBtnBackgroundPath as String?)
+        if (loginButtonBackgroundPath != null) {
+            val resId = getResourceByReflect(loginButtonBackgroundPath as String?)
             if (resId > 0) {
-                builder.setLogBtnImgPath(logBtnBackgroundPath as String?)
+                builder.setLogBtnImgPath(loginButtonBackgroundPath as String?)
             }
         }
         /************** check box  */
+        val uncheckedImgPath = valueForKey(uiConfig, "uncheckedImgPath")
+        val checkedImgPath = valueForKey(uiConfig, "checkedImgPath")
+        val privacyCheckboxHidden = valueForKey(uiConfig, "privacyCheckboxHidden")
+        val privacyCheckboxSize = valueForKey(uiConfig, "privacyCheckboxSize")
+
         builder.setPrivacyCheckboxHidden((privacyCheckboxHidden as Boolean?)!!)
         if (privacyCheckboxSize != null) {
             builder.setPrivacyCheckboxSize((privacyCheckboxSize as Int?)!!)
@@ -514,7 +490,18 @@ class FlJVerifyPlugin : FlutterPlugin, MethodCallHandler {
                 builder.setCheckedImgPath(checkedImgPath as String?)
             }
         }
+        if (privacyCheckboxSize != null) {
+            builder.setPrivacyCheckboxSize((privacyCheckboxSize as Int?)!!)
+        }
         /************** privacy  */
+
+        val privacyTopOffsetY = valueForKey(uiConfig, "privacyTopOffsetY")
+        val privacyOffsetY = valueForKey(uiConfig, "privacyOffsetY")
+        val privacyOffsetX = valueForKey(uiConfig, "privacyOffsetX")
+        val clauseBaseColor = valueForKey(uiConfig, "clauseBaseColor")
+        val clauseColor = valueForKey(uiConfig, "clauseColor")
+        val privacyTextBold = valueForKey(uiConfig, "privacyTextBold")
+
         if (privacyOffsetY != null) {
             //设置隐私条款相对于授权页面底部下边缘y偏移
             builder.setPrivacyOffsetY((privacyOffsetY as Int?)!!)
@@ -527,9 +514,7 @@ class FlJVerifyPlugin : FlutterPlugin, MethodCallHandler {
         if (privacyOffsetX != null) {
             builder.setPrivacyOffsetX((privacyOffsetX as Int?)!!)
         }
-        if (privacyCheckboxSize != null) {
-            builder.setPrivacyCheckboxSize((privacyCheckboxSize as Int?)!!)
-        }
+
         val privacyTextSize = valueForKey(uiConfig, "privacyTextSize")
         if (privacyTextSize != null) {
             builder.setPrivacyTextSize((privacyTextSize as Int?)!!)
@@ -542,32 +527,26 @@ class FlJVerifyPlugin : FlutterPlugin, MethodCallHandler {
         if (privacyTextBold != null) {
             builder.setPrivacyTextBold((privacyTextBold as Boolean?)!!)
         }
+        val privacyUnderlineText = valueForKey(uiConfig, "privacyUnderlineText")
         if (privacyUnderlineText != null) {
             builder.setPrivacyUnderlineText((privacyUnderlineText as Boolean?)!!)
         }
-        builder.setPrivacyTextCenterGravity((privacyTextCenterGravity as Boolean?)!!)
-        builder.setPrivacyWithBookTitleMark((privacyWithBookTitleMark as Boolean?)!!)
-        builder.setPrivacyCheckboxInCenter((privacyCheckboxInCenter as Boolean?)!!)
-        builder.setPrivacyState((privacyState as Boolean?)!!)
+        builder.setPrivacyTextCenterGravity(valueForKey(uiConfig, "privacyTextCenterGravity") as Boolean)
+        builder.setPrivacyWithBookTitleMark(valueForKey(uiConfig, "privacyWithBookTitleMark") as Boolean)
+        builder.setPrivacyCheckboxInCenter(valueForKey(uiConfig, "privacyCheckboxInCenter") as Boolean)
+        builder.setPrivacyState(valueForKey(uiConfig, "privacyState") as Boolean)
+        val privacy = valueForKey(uiConfig, "privacy") as ArrayList<*>?
         if (privacy != null) {
-            try {
-                val jsonArray = JSONArray(privacy as String?)
-                val length = jsonArray.length()
-                var jsonObject: JSONObject
-                var privacyBean: PrivacyBean
-                val privacyBeans = ArrayList<PrivacyBean>(length)
-                for (i in 0 until length) {
-                    jsonObject = jsonArray.optJSONObject(i)
-                    privacyBean = PrivacyBean(
-                        jsonObject.optString("name"), jsonObject.optString("url"),
-                        jsonObject.optString("separator")
-                    )
-                    privacyBeans.add(privacyBean)
-                }
-                builder.setPrivacyNameAndUrlBeanList(privacyBeans)
-            } catch (e: JSONException) {
-                e.printStackTrace()
+            val privacyBeans = ArrayList<PrivacyBean>()
+            var privacyBean: PrivacyBean
+            for (map in privacy) {
+                map as Map<*, *>
+                privacyBean = PrivacyBean(
+                        map["name"] as String, map["url"] as String,
+                        map["separator"] as String)
+                privacyBeans.add(privacyBean)
             }
+            builder.setPrivacyNameAndUrlBeanList(privacyBeans)
         }
         var baseColor = -10066330
         var color = -16007674
@@ -587,27 +566,34 @@ class FlJVerifyPlugin : FlutterPlugin, MethodCallHandler {
         }
         builder.setAppPrivacyColor(baseColor, color)
         /************** 隐私 web 页面  */
+        val privacyNavColor = valueForKey(uiConfig, "privacyNavColor")
         if (privacyNavColor != null) {
             builder.setPrivacyNavColor(exchangeObject(privacyNavColor))
         }
+        val privacyNavTitleTextSize = valueForKey(uiConfig, "privacyNavTitleTextSize")
         if (privacyNavTitleTextSize != null) {
             builder.setPrivacyNavTitleTextSize(exchangeObject(privacyNavTitleTextSize))
         }
+        val privacyNavTitleTextColor = valueForKey(uiConfig, "privacyNavTitleTextColor")
+
         if (privacyNavTitleTextColor != null) {
             builder.setPrivacyNavTitleTextColor(exchangeObject(privacyNavTitleTextColor))
         }
 
+        val privacyNavTitleTextBold = valueForKey(uiConfig, "privacyNavTitleTextBold")
         if (privacyNavTitleTextBold != null) {
             builder.setPrivacyNavTitleTextBold((privacyNavTitleTextBold as Boolean?)!!)
         }
+        val privacyNavReturnBtnPath = valueForKey(uiConfig, "privacyNavReturnBtnImage")
         if (privacyNavReturnBtnPath != null) {
             val resId = getResourceByReflect(privacyNavReturnBtnPath as String?)
             if (resId > 0) {
                 builder.setPrivacyNavReturnBtnPath(privacyNavReturnBtnPath as String?)
             }
         }
-        builder.enableHintToast((privacyHintToast as Boolean?)!!, null)
+        builder.enableHintToast(valueForKey(uiConfig, "privacyHintToast") as Boolean, null)
         /************** 授权页弹窗模式  */
+        val popViewConfig = valueForKey(uiConfig, "popViewConfig")
         if (popViewConfig != null) {
             val popViewConfigMap = popViewConfig as Map<*, *>
             val isPopViewTheme = valueForKey(popViewConfigMap, "isPopViewTheme")
@@ -618,8 +604,8 @@ class FlJVerifyPlugin : FlutterPlugin, MethodCallHandler {
                 val offsetCenterY = valueForKey(popViewConfigMap, "offsetCenterY")
                 val isBottom = valueForKey(popViewConfigMap, "isBottom")
                 builder.setDialogTheme(
-                    width as Int, height as Int, offsetCenterX as Int, offsetCenterY as Int,
-                    (isBottom as Boolean?)!!
+                        width as Int, height as Int, offsetCenterX as Int, offsetCenterY as Int,
+                        (isBottom as Boolean?)!!
                 )
             }
         }
@@ -690,8 +676,8 @@ class FlJVerifyPlugin : FlutterPlugin, MethodCallHandler {
         val width = para["width"] as Int
         val height = para["height"] as Int
         val mLayoutParams1 = RelativeLayout.LayoutParams(
-            RelativeLayout.LayoutParams.WRAP_CONTENT,
-            RelativeLayout.LayoutParams.WRAP_CONTENT
+                RelativeLayout.LayoutParams.WRAP_CONTENT,
+                RelativeLayout.LayoutParams.WRAP_CONTENT
         )
         mLayoutParams1.leftMargin = dp2Pix(context!!, left.toFloat())
         mLayoutParams1.topMargin = dp2Pix(context!!, top.toFloat())
@@ -777,8 +763,8 @@ class FlJVerifyPlugin : FlutterPlugin, MethodCallHandler {
         val width = para["width"] as Int
         val height = para["height"] as Int
         val mLayoutParams1 = RelativeLayout.LayoutParams(
-            RelativeLayout.LayoutParams.WRAP_CONTENT,
-            RelativeLayout.LayoutParams.WRAP_CONTENT
+                RelativeLayout.LayoutParams.WRAP_CONTENT,
+                RelativeLayout.LayoutParams.WRAP_CONTENT
         )
         mLayoutParams1.leftMargin = dp2Pix(context!!, left.toFloat())
         mLayoutParams1.topMargin = dp2Pix(context!!, top.toFloat())
@@ -831,9 +817,9 @@ class FlJVerifyPlugin : FlutterPlugin, MethodCallHandler {
      * @param pressImageName  点击时背景图
      */
     private fun setButtonSelector(
-        button: Button,
-        normalImageName: String?,
-        pressImageName: String?
+            button: Button,
+            normalImageName: String?,
+            pressImageName: String?
     ) {
         val drawable = StateListDrawable()
         val res = context!!.resources

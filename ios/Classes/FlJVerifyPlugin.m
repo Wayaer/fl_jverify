@@ -257,18 +257,13 @@ JVLayoutConstraint *JVLayoutHeight(CGFloat height) {
     NSNumber *logoHeight = [self getNumberValue:config key:@"logoHeight"];
     NSNumber *logoOffsetX = [self getNumberValue:config key:@"logoOffsetX"];
     NSNumber *logoOffsetY = [self getNumberValue:config key:@"logoOffsetY"];
-    if (logoLayoutItem == JVLayoutItemNone) {
-        uiConfig.logoWidth = [logoWidth floatValue];
-        uiConfig.logoHeight = [logoHeight floatValue];
-        uiConfig.logoOffsetY = [logoOffsetY floatValue];
-    } else {
-        JVLayoutConstraint *logo_cons_x = JVLayoutCenterX([logoOffsetX floatValue]);
-        JVLayoutConstraint *logo_cons_y = JVLayoutTop([logoOffsetY floatValue], logoLayoutItem, NSLayoutAttributeTop);
-        JVLayoutConstraint *logo_cons_w = JVLayoutWidth([logoWidth floatValue]);
-        JVLayoutConstraint *logo_cons_h = JVLayoutHeight([logoHeight floatValue]);
-        uiConfig.logoConstraints = @[logo_cons_x, logo_cons_y, logo_cons_w, logo_cons_h];
-        uiConfig.logoHorizontalConstraints = uiConfig.logoConstraints;
-    }
+
+    JVLayoutConstraint *logo_cons_x = JVLayoutCenterX([logoOffsetX floatValue]);
+    JVLayoutConstraint *logo_cons_y = JVLayoutTop([logoOffsetY floatValue], logoLayoutItem, NSLayoutAttributeTop);
+    JVLayoutConstraint *logo_cons_w = JVLayoutWidth([logoWidth floatValue]);
+    JVLayoutConstraint *logo_cons_h = JVLayoutHeight([logoHeight floatValue]);
+    uiConfig.logoConstraints = @[logo_cons_x, logo_cons_y, logo_cons_w, logo_cons_h];
+    uiConfig.logoHorizontalConstraints = uiConfig.logoConstraints;
 
     NSString *logoImgPath = [self getValue:config key:@"logoImgPath"];
     if (logoImgPath) {
@@ -286,17 +281,14 @@ JVLayoutConstraint *JVLayoutHeight(CGFloat height) {
     NSNumber *numFieldOffsetY = [self getNumberValue:config key:@"numFieldOffsetY"];
     NSNumber *numberFieldWidth = [self getNumberValue:config key:@"numberFieldWidth"];
     NSNumber *numberFieldHeight = [self getNumberValue:config key:@"numberFieldHeight"];
-    if (numberLayoutItem == JVLayoutItemNone) {
-        uiConfig.numFieldOffsetY = [numFieldOffsetY floatValue];
-    } else {
-        JVLayoutConstraint *num_cons_x = JVLayoutCenterX([numFieldOffsetX floatValue]);
-        JVLayoutConstraint *num_cons_y = JVLayoutTop([numFieldOffsetY floatValue], numberLayoutItem, NSLayoutAttributeBottom);
-        JVLayoutConstraint *num_cons_w = JVLayoutWidth([numberFieldWidth floatValue]);
-        JVLayoutConstraint *num_cons_h = JVLayoutHeight([numberFieldHeight floatValue]);
 
-        uiConfig.numberConstraints = @[num_cons_x, num_cons_y, num_cons_w, num_cons_h];
-        uiConfig.numberHorizontalConstraints = uiConfig.numberConstraints;
-    }
+    JVLayoutConstraint *num_cons_x = JVLayoutCenterX([numFieldOffsetX floatValue]);
+    JVLayoutConstraint *num_cons_y = JVLayoutTop([numFieldOffsetY floatValue], numberLayoutItem, NSLayoutAttributeBottom);
+    JVLayoutConstraint *num_cons_w = JVLayoutWidth([numberFieldWidth floatValue]);
+    JVLayoutConstraint *num_cons_h = JVLayoutHeight([numberFieldHeight floatValue]);
+
+    uiConfig.numberConstraints = @[num_cons_x, num_cons_y, num_cons_w, num_cons_h];
+    uiConfig.numberHorizontalConstraints = uiConfig.numberConstraints;
 
     NSNumber *numberColor = [self getValue:config key:@"numberColor"];
     if (numberColor) {
@@ -315,18 +307,15 @@ JVLayoutConstraint *JVLayoutHeight(CGFloat height) {
     NSNumber *sloganWidth = [self getNumberValue:config key:@"sloganWidth"];
     NSNumber *sloganHeight = [self getNumberValue:config key:@"sloganHeight"];
 
-    if (sloganLayoutItem == JVLayoutItemNone) {
-        uiConfig.sloganOffsetY = [sloganOffsetY floatValue];
-    } else {
-        JVLayoutConstraint *slogan_cons_top = JVLayoutTop([sloganOffsetY floatValue], sloganLayoutItem, NSLayoutAttributeBottom);
-        JVLayoutConstraint *slogan_cons_center_x = JVLayoutCenterX([sloganOffsetX floatValue]);
-        CGFloat sloganH = [sloganHeight floatValue] > 0 ?: 20;
-        CGFloat sloganW = [sloganWidth floatValue] > 0 ?: 200;
-        JVLayoutConstraint *slogan_cons_width = JVLayoutWidth(sloganW);
-        JVLayoutConstraint *slogan_cons_height = JVLayoutHeight(sloganH);
-        uiConfig.sloganConstraints = @[slogan_cons_top, slogan_cons_center_x, slogan_cons_width, slogan_cons_height];
-        uiConfig.sloganHorizontalConstraints = uiConfig.sloganConstraints;
-    }
+
+    JVLayoutConstraint *slogan_cons_top = JVLayoutTop([sloganOffsetY floatValue], sloganLayoutItem, NSLayoutAttributeBottom);
+    JVLayoutConstraint *slogan_cons_center_x = JVLayoutCenterX([sloganOffsetX floatValue]);
+    CGFloat sloganH = [sloganHeight floatValue] > 0 ?: 20;
+    CGFloat sloganW = [sloganWidth floatValue] > 0 ?: 200;
+    JVLayoutConstraint *slogan_cons_width = JVLayoutWidth(sloganW);
+    JVLayoutConstraint *slogan_cons_height = JVLayoutHeight(sloganH);
+    uiConfig.sloganConstraints = @[slogan_cons_top, slogan_cons_center_x, slogan_cons_width, slogan_cons_height];
+    uiConfig.sloganHorizontalConstraints = uiConfig.sloganConstraints;
 
     NSNumber *sloganTextColor = [self getValue:config key:@"sloganTextColor"];
     if (sloganTextColor) {
@@ -338,34 +327,31 @@ JVLayoutConstraint *JVLayoutHeight(CGFloat height) {
         uiConfig.sloganFont = [UIFont systemFontOfSize:[sloganTextSize floatValue]];
     }
     /************** login btn ***************/
-    JVLayoutItem logBtnLayoutItem = [self getLayoutItem:[self getValue:config key:@"logBtnVerticalLayout"]];
-    NSNumber *logBtnOffsetX = [self getNumberValue:config key:@"logBtnOffsetX"];
-    NSNumber *logBtnOffsetY = [self getNumberValue:config key:@"logBtnOffsetY"];
-    NSNumber *logBtnWidth = [self getNumberValue:config key:@"logBtnWidth"];
-    NSNumber *logBtnHeight = [self getNumberValue:config key:@"logBtnHeight"];
-    if (logBtnLayoutItem == JVLayoutItemNone) {
-        uiConfig.logBtnOffsetY = [logBtnOffsetY floatValue];
-    } else {
-        JVLayoutConstraint *logoBtn_cons_x = JVLayoutCenterX([logBtnOffsetX floatValue]);
-        JVLayoutConstraint *logoBtn_cons_y = JVLayoutTop([logBtnOffsetY floatValue], logBtnLayoutItem, NSLayoutAttributeBottom);
-        JVLayoutConstraint *logoBtn_cons_w = JVLayoutWidth([logBtnWidth floatValue]);
-        JVLayoutConstraint *logoBtn_cons_h = JVLayoutHeight([logBtnHeight floatValue]);
+    JVLayoutItem loginButtonLayoutItem = [self getLayoutItem:[self getValue:config key:@"loginButtonVerticalLayout"]];
+    NSNumber *loginButtonOffsetX = [self getNumberValue:config key:@"loginButtonOffsetX"];
+    NSNumber *loginButtonOffsetY = [self getNumberValue:config key:@"loginButtonOffsetY"];
+    NSNumber *loginButtonWidth = [self getNumberValue:config key:@"loginButtonWidth"];
+    NSNumber *loginButtonHeight = [self getNumberValue:config key:@"loginButtonHeight"];
 
-        uiConfig.logBtnConstraints = @[logoBtn_cons_x, logoBtn_cons_y, logoBtn_cons_w, logoBtn_cons_h];
-        uiConfig.logBtnHorizontalConstraints = uiConfig.logBtnConstraints;
-    }
+    JVLayoutConstraint *logoBtn_cons_x = JVLayoutCenterX([loginButtonOffsetX floatValue]);
+    JVLayoutConstraint *logoBtn_cons_y = JVLayoutTop([loginButtonOffsetY floatValue], loginButtonLayoutItem, NSLayoutAttributeBottom);
+    JVLayoutConstraint *logoBtn_cons_w = JVLayoutWidth([loginButtonWidth floatValue]);
+    JVLayoutConstraint *logoBtn_cons_h = JVLayoutHeight([loginButtonHeight floatValue]);
 
-    NSString *logBtnText = [self getValue:config key:@"logBtnText"];
-    if (logBtnText) {
-        uiConfig.logBtnText = logBtnText;
+    uiConfig.logBtnConstraints = @[logoBtn_cons_x, logoBtn_cons_y, logoBtn_cons_w, logoBtn_cons_h];
+    uiConfig.logBtnHorizontalConstraints = uiConfig.logBtnConstraints;
+
+    NSString *loginButtonText = [self getValue:config key:@"loginButtonText"];
+    if (loginButtonText) {
+        uiConfig.logBtnText = loginButtonText;
     }
-    NSNumber *logBtnTextSize = [self getValue:config key:@"logBtnTextSize"];
-    if (logBtnTextSize) {
-        uiConfig.logBtnFont = [UIFont systemFontOfSize:[logBtnTextSize floatValue]];
+    NSNumber *loginButtonTextSize = [self getValue:config key:@"loginButtonTextSize"];
+    if (loginButtonTextSize) {
+        uiConfig.logBtnFont = [UIFont systemFontOfSize:[loginButtonTextSize floatValue]];
     }
-    NSNumber *logBtnTextColor = [self getValue:config key:@"logBtnTextColor"];
-    if (logBtnTextColor) {
-        uiConfig.logBtnTextColor = UIColorFromRGB([logBtnTextColor integerValue]);
+    NSNumber *loginButtonTextColor = [self getValue:config key:@"loginButtonTextColor"];
+    if (loginButtonTextColor) {
+        uiConfig.logBtnTextColor = UIColorFromRGB([loginButtonTextColor integerValue]);
     }
     NSArray *images = @[];
 
@@ -445,13 +431,11 @@ JVLayoutConstraint *JVLayoutHeight(CGFloat height) {
         }
 
     }
-    if ([[config allKeys] containsObject:@"privacy"] && [config[@"privacy"] isKindOfClass:[NSString class]]) {
-        NSString *privacyJson = config[@"privacy"];
-        NSData *privacyData = [privacyJson dataUsingEncoding:NSUTF8StringEncoding];
-        NSArray *privacyArr = [NSJSONSerialization JSONObjectWithData:privacyData options:0 error:nil];
-        for (NSInteger i = 0; i < privacyArr.count; i++) {
-            NSMutableArray *item = [NSMutableArray array];
 
+    if ([[config allKeys] containsObject:@"privacy"] && [config[@"privacy"] isKindOfClass:[NSString class]]) {
+        NSArray *privacyArr = config[@"privacy"];
+        for (NSUInteger i = 0; i < privacyArr.count; i++) {
+            NSMutableArray *item = [NSMutableArray array];
             NSDictionary *obj = privacyArr[i];
 
             //加入协议之间的分隔符
@@ -488,7 +472,6 @@ JVLayoutConstraint *JVLayoutHeight(CGFloat height) {
             }
             //添加一条协议appPrivacyArr中
             [appPrivacyArr addObject:item];
-
         }
     }
     //设置尾部
@@ -531,7 +514,7 @@ JVLayoutConstraint *JVLayoutHeight(CGFloat height) {
         uiConfig.privacyTextFontSize = [privacyTextSize floatValue];
     }
 
-    JVLayoutItem privacyLayoutItem = [self getLayoutItem:[self getValue:config key:@"privacyVerticalLayout"]];
+//    JVLayoutItem privacyLayoutItem = [self getLayoutItem:[self getValue:config key:@"privacyVerticalLayout"]];
 
     CGFloat widthScreen = [UIScreen mainScreen].bounds.size.width;
     NSDictionary *popViewConfig = [self getValue:config key:@"popViewConfig"];
@@ -549,12 +532,9 @@ JVLayoutConstraint *JVLayoutHeight(CGFloat height) {
     JVLayoutConstraint *privacy_cons_y = [JVLayoutConstraint constraintWithAttribute:NSLayoutAttributeBottom relatedBy:NSLayoutRelationEqual toItem:JVLayoutItemSuper attribute:NSLayoutAttributeBottom multiplier:1 constant:-[privacyOffsetY floatValue]];
     JVLayoutConstraint *privacy_cons_w = [JVLayoutConstraint constraintWithAttribute:NSLayoutAttributeWidth relatedBy:NSLayoutRelationEqual toItem:JVLayoutItemNone attribute:NSLayoutAttributeWidth multiplier:1 constant:labelWidth];
     JVLayoutConstraint *privacy_cons_h = [JVLayoutConstraint constraintWithAttribute:NSLayoutAttributeHeight relatedBy:NSLayoutRelationEqual toItem:JVLayoutItemNone attribute:NSLayoutAttributeHeight multiplier:1 constant:labelSize.height];
-    if (privacyLayoutItem == JVLayoutItemNone) {
-        uiConfig.privacyOffsetY = [privacyOffsetY floatValue];
-    } else {
-        uiConfig.privacyConstraints = @[privacy_cons_x, privacy_cons_y, privacy_cons_w, privacy_cons_h];
-        uiConfig.privacyHorizontalConstraints = uiConfig.privacyConstraints;
-    }
+
+    uiConfig.privacyConstraints = @[privacy_cons_x, privacy_cons_y, privacy_cons_w, privacy_cons_h];
+    uiConfig.privacyHorizontalConstraints = uiConfig.privacyConstraints;
     //隐私条款垂直对齐方式
     if ([[config allKeys] containsObject:@"textVerAlignment"]) {
         uiConfig.textVerAlignment = [config[@"textVerAlignment"] intValue];
