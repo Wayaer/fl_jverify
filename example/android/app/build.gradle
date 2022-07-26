@@ -26,7 +26,7 @@ apply plugin: 'kotlin-android'
 apply from: "$flutterRoot/packages/flutter_tools/gradle/flutter.gradle"
 
 android {
-    compileSdkVersion 31
+    compileSdkVersion 33
 
     kotlinOptions {
         jvmTarget = '1.8'
@@ -37,9 +37,9 @@ android {
     }
 
     defaultConfig {
-        applicationId "com.fl.jverify.example"
+        applicationId "fl.jverify.example"
         minSdkVersion 21
-        targetSdkVersion 31
+        targetSdkVersion 33
         versionCode flutterVersionCode.toInteger()
         versionName flutterVersionName
         manifestPlaceholders = [
@@ -54,7 +54,7 @@ android {
             signingConfig signingConfigs.debug
         }
     }
-    namespace 'com.fl.jverify.example'
+    namespace 'fl.jverify.example'
 }
 
 flutter {

@@ -1,4 +1,4 @@
-package com.fl.jverify
+package fl.jverify
 
 import android.content.Context
 import android.graphics.BitmapFactory
@@ -54,10 +54,9 @@ class FlJVerifyPlugin : FlutterPlugin, MethodCallHandler {
                 }
                 JVerificationInterface.init(context, timeout!!) { code, message ->
                     result.success(
-                            mapOf(
-                                    codeKey to code,
-                                    msgKey to message
-                            )
+                        mapOf(
+                            codeKey to code, msgKey to message
+                        )
                     )
                 }
             }
@@ -73,25 +72,21 @@ class FlJVerifyPlugin : FlutterPlugin, MethodCallHandler {
             }
             "getToken" -> {
                 JVerificationInterface.getToken(
-                        context,
-                        call.arguments as Int
+                    context, call.arguments as Int
                 ) { code, message, operator ->
                     result.success(
-                            mapOf(
-                                    codeKey to code,
-                                    msgKey to message,
-                                    oprKey to operator
-                            )
+                        mapOf(
+                            codeKey to code, msgKey to message, oprKey to operator
+                        )
                     )
                 }
             }
             "preLogin" -> {
                 JVerificationInterface.preLogin(context, call.arguments as Int) { code, message ->
                     result.success(
-                            mapOf(
-                                    codeKey to code,
-                                    msgKey to message
-                            )
+                        mapOf(
+                            codeKey to code, msgKey to message
+                        )
                     )
                 }
             }
@@ -104,20 +99,17 @@ class FlJVerifyPlugin : FlutterPlugin, MethodCallHandler {
                 settings.authPageEventListener = object : AuthPageEventListener() {
                     override fun onEvent(code: Int, msg: String) {
                         channel!!.invokeMethod(
-                                "onReceiveAuthPageEvent", mapOf(
-                                codeKey to code,
-                                msgKey to msg
-                        )
+                            "onReceiveAuthPageEvent", mapOf(
+                                codeKey to code, msgKey to msg
+                            )
                         )
                     }
                 }
                 JVerificationInterface.loginAuth(context, settings) { code, msg, operator ->
                     result.success(
-                            mapOf(
-                                    codeKey to code,
-                                    msgKey to msg,
-                                    oprKey to operator
-                            )
+                        mapOf(
+                            codeKey to code, msgKey to msg, oprKey to operator
+                        )
                     )
                 }
             }
@@ -175,10 +167,10 @@ class FlJVerifyPlugin : FlutterPlugin, MethodCallHandler {
                 val tempId = call.argument<String>("tempId")
                 JVerificationInterface.getSmsCode(context, phoneNum, signId, tempId) { code, msg ->
                     result.success(
-                            mapOf(
-                                    codeKey to code,
-                                    msgKey to msg,
-                            )
+                        mapOf(
+                            codeKey to code,
+                            msgKey to msg,
+                        )
                     )
                 }
             }
@@ -196,8 +188,7 @@ class FlJVerifyPlugin : FlutterPlugin, MethodCallHandler {
         try {
             val aClass = JVerificationInterface::class.java
             val method = aClass.getDeclaredMethod(
-                    "setControlWifiSwitch",
-                    Boolean::class.javaPrimitiveType
+                "setControlWifiSwitch", Boolean::class.javaPrimitiveType
             )
             method.isAccessible = true
             method.invoke(aClass, false)
@@ -237,7 +228,7 @@ class FlJVerifyPlugin : FlutterPlugin, MethodCallHandler {
         val privacyStatusBarTransparent = valueForKey(uiConfig, "privacyStatusBarTransparent")
         val privacyStatusBarHidden = valueForKey(uiConfig, "privacyStatusBarHidden")
         val privacyVirtualButtonTransparent =
-                valueForKey(uiConfig, "privacyVirtualButtonTransparent")
+            valueForKey(uiConfig, "privacyVirtualButtonTransparent")
         if (privacyStatusBarColorWithNav != null) {
             builder.setPrivacyStatusBarColorWithNav((privacyStatusBarColorWithNav as Boolean?)!!)
         }
@@ -294,7 +285,7 @@ class FlJVerifyPlugin : FlutterPlugin, MethodCallHandler {
         val authBGVideoImgPath = valueForKey(uiConfig, "authBGVideoImgPath")
         if (authBGVideoPath != null) {
             if (!(authBGVideoPath as String).startsWith("http")) authBGVideoPath =
-                    "android.resource://" + context!!.packageName + "/raw/" + authBGVideoPath
+                "android.resource://" + context!!.packageName + "/raw/" + authBGVideoPath
             builder.setAuthBGVideoPath(authBGVideoPath as String?, authBGVideoImgPath as String?)
         }
         /************** nav  */
@@ -532,9 +523,21 @@ class FlJVerifyPlugin : FlutterPlugin, MethodCallHandler {
         if (privacyUnderlineText != null) {
             builder.setPrivacyUnderlineText((privacyUnderlineText as Boolean?)!!)
         }
-        builder.setPrivacyTextCenterGravity(valueForKey(uiConfig, "privacyTextCenterGravity") as Boolean)
-        builder.setPrivacyWithBookTitleMark(valueForKey(uiConfig, "privacyWithBookTitleMark") as Boolean)
-        builder.setPrivacyCheckboxInCenter(valueForKey(uiConfig, "privacyCheckboxInCenter") as Boolean)
+        builder.setPrivacyTextCenterGravity(
+            valueForKey(
+                uiConfig, "privacyTextCenterGravity"
+            ) as Boolean
+        )
+        builder.setPrivacyWithBookTitleMark(
+            valueForKey(
+                uiConfig, "privacyWithBookTitleMark"
+            ) as Boolean
+        )
+        builder.setPrivacyCheckboxInCenter(
+            valueForKey(
+                uiConfig, "privacyCheckboxInCenter"
+            ) as Boolean
+        )
         builder.setPrivacyState(valueForKey(uiConfig, "privacyState") as Boolean)
         val privacy = valueForKey(uiConfig, "privacy") as ArrayList<*>?
         if (privacy != null) {
@@ -543,8 +546,8 @@ class FlJVerifyPlugin : FlutterPlugin, MethodCallHandler {
             for (map in privacy) {
                 map as Map<*, *>
                 privacyBean = PrivacyBean(
-                        map["name"] as String, map["url"] as String,
-                        map["separator"] as String)
+                    map["name"] as String, map["url"] as String, map["separator"] as String
+                )
                 privacyBeans.add(privacyBean)
             }
             builder.setPrivacyNameAndUrlBeanList(privacyBeans)
@@ -605,8 +608,11 @@ class FlJVerifyPlugin : FlutterPlugin, MethodCallHandler {
                 val offsetCenterY = valueForKey(popViewConfigMap, "offsetCenterY")
                 val isBottom = valueForKey(popViewConfigMap, "isBottom")
                 builder.setDialogTheme(
-                        width as Int, height as Int, offsetCenterX as Int, offsetCenterY as Int,
-                        (isBottom as Boolean?)!!
+                    width as Int,
+                    height as Int,
+                    offsetCenterX as Int,
+                    offsetCenterY as Int,
+                    (isBottom as Boolean?)!!
                 )
             }
         }
@@ -677,8 +683,7 @@ class FlJVerifyPlugin : FlutterPlugin, MethodCallHandler {
         val width = para["width"] as Int
         val height = para["height"] as Int
         val mLayoutParams1 = RelativeLayout.LayoutParams(
-                RelativeLayout.LayoutParams.WRAP_CONTENT,
-                RelativeLayout.LayoutParams.WRAP_CONTENT
+            RelativeLayout.LayoutParams.WRAP_CONTENT, RelativeLayout.LayoutParams.WRAP_CONTENT
         )
         mLayoutParams1.leftMargin = dp2Pix(context!!, left.toFloat())
         mLayoutParams1.topMargin = dp2Pix(context!!, top.toFloat())
@@ -764,8 +769,7 @@ class FlJVerifyPlugin : FlutterPlugin, MethodCallHandler {
         val width = para["width"] as Int
         val height = para["height"] as Int
         val mLayoutParams1 = RelativeLayout.LayoutParams(
-                RelativeLayout.LayoutParams.WRAP_CONTENT,
-                RelativeLayout.LayoutParams.WRAP_CONTENT
+            RelativeLayout.LayoutParams.WRAP_CONTENT, RelativeLayout.LayoutParams.WRAP_CONTENT
         )
         mLayoutParams1.leftMargin = dp2Pix(context!!, left.toFloat())
         mLayoutParams1.topMargin = dp2Pix(context!!, top.toFloat())
@@ -818,9 +822,7 @@ class FlJVerifyPlugin : FlutterPlugin, MethodCallHandler {
      * @param pressImageName  点击时背景图
      */
     private fun setButtonSelector(
-            button: Button,
-            normalImageName: String?,
-            pressImageName: String?
+        button: Button, normalImageName: String?, pressImageName: String?
     ) {
         val drawable = StateListDrawable()
         val res = context!!.resources

@@ -1,4 +1,4 @@
-package com.fl.jverify
+package fl.jverify
 
 import android.content.Context
 

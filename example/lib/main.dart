@@ -74,8 +74,8 @@ class _HomePageState extends State<HomePage> {
           Container(
               alignment: Alignment.center,
               margin: const EdgeInsets.all(10),
-              child: Text(text, style: const TextStyle(fontSize: 12)),
-              height: 130),
+              height: 130,
+              child: Text(text, style: const TextStyle(fontSize: 12))),
           Wrap(
               spacing: 12,
               runSpacing: 6,

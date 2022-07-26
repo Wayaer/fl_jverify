@@ -1,4 +1,4 @@
-package com.fl.jverify.example
+package fl.jverify.example
 
 import io.flutter.embedding.android.FlutterActivity
 
